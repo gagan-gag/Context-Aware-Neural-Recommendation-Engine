@@ -1,2 +1,2 @@
-"""RecomNova API package."""
+"""AVERO API package."""
 

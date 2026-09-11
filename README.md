@@ -1,6 +1,6 @@
-# RecomNova
+# AVERO
 
-RecomNova is a context-aware e-commerce recommendation platform. This first milestone provides a runnable demo mode with a FastAPI service, typed recommendation responses, local demo catalog data, and a React dashboard shell.
+AVERO is a context-aware e-commerce recommendation platform. This first milestone provides a runnable demo mode with a FastAPI service, typed recommendation responses, local demo catalog data, and a React dashboard shell.
 
 ## Quick start
 

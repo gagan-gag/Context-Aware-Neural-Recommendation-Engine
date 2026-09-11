@@ -9,8 +9,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class Settings(BaseSettings):
-    app_name: str = "RecomNova"
-    mode: str = Field(default="demo", validation_alias="RECOMNOVA_MODE")
+    app_name: str = "AVERO"
+    mode: str = Field(default="demo", validation_alias="AVERO_MODE")
     demo_data_dir: Path = PROJECT_ROOT / "data" / "demo"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

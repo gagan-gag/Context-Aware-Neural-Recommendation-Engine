@@ -24,7 +24,7 @@ def get_recommendations(user_id: str, k: int) -> RecommendationResponse:
     preferred_category = user["preferred_category"]
     ranked = sorted(products, key=lambda product: (product.category == preferred_category, product.article_id), reverse=True)[:k]
     recommendations = [
-        Recommendation(**product.model_dump(), score=round(0.95 - index * 0.06, 2), reason=(f"Matches your interest in {preferred_category.lower()}" if product.category == preferred_category else "Popular in the RecomNova demo catalog"))
+        Recommendation(**product.model_dump(), score=round(0.95 - index * 0.06, 2), reason=(f"Matches your interest in {preferred_category.lower()}" if product.category == preferred_category else "Popular in the AVERO demo catalog"))
         for index, product in enumerate(ranked)
     ]
     return RecommendationResponse(user_id=user_id, mode=get_settings().mode, recommendations=recommendations)
