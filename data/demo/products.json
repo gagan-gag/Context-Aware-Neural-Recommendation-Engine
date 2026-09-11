@@ -1,0 +1,7 @@
+[
+  {"article_id": "RN-1001", "name": "Satin Midi Dress", "category": "Dresses", "color": "Emerald", "price": 49.99, "image_url": null},
+  {"article_id": "RN-1002", "name": "Cotton Poplin Dress", "category": "Dresses", "color": "Ivory", "price": 39.99, "image_url": null},
+  {"article_id": "RN-2001", "name": "Relaxed Oxford Shirt", "category": "Shirts", "color": "Sky Blue", "price": 34.99, "image_url": null},
+  {"article_id": "RN-3001", "name": "Wide Leg Trousers", "category": "Trousers", "color": "Black", "price": 54.99, "image_url": null},
+  {"article_id": "RN-4001", "name": "Structured Blazer", "category": "Outerwear", "color": "Sand", "price": 89.99, "image_url": null}
+]
