@@ -1,0 +1,14 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+node_modules/
+.pnpm-store/
+dist/
+tmp_plan_render/
+
+# Generated data and model artifacts
+data/raw/
+data/processed/
+artifacts/
