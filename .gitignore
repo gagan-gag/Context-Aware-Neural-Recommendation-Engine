@@ -8,6 +8,12 @@ node_modules/
 dist/
 tmp_plan_render/
 
+# H&M source dataset - never commit large raw files
+data/hm/
+data/raw/
+*.csv
+!data/demo/*.csv
+
 # Generated data and model artifacts
 data/raw/
 data/processed/
