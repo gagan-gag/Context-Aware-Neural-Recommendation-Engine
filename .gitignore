@@ -16,5 +16,6 @@ data/raw/
 
 # Generated data and model artifacts
 data/raw/
+# Processed Spark output
 data/processed/
 artifacts/
