@@ -1,4 +1,4 @@
-# AVERO
+# AVERO 
 
 AVERO is a context-aware e-commerce recommendation platform. This first milestone provides a runnable demo mode with a FastAPI service, typed recommendation responses, local demo catalog data, and a React dashboard shell.
 
