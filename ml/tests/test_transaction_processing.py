@@ -1,5 +1,8 @@
 import os
+import shutil
+import sys
 from datetime import date
+from pathlib import Path
 
 import pytest
 from pyspark.sql import SparkSession
@@ -11,9 +14,26 @@ from ml.data.transaction_processing import (
 )
 
 
+def _get_safe_python_executable() -> str:
+    current_python = Path(sys.executable).resolve()
+    if current_python.exists() and "'" not in str(current_python) and " " not in str(current_python):
+        return str(current_python)
+
+    safe_dir = Path(os.environ.get("TEMP", "/tmp")) / "avero-spark-runtime"
+    safe_dir.mkdir(parents=True, exist_ok=True)
+    safe_python = safe_dir / "python.exe"
+    if not safe_python.exists():
+        shutil.copy2(current_python, safe_python)
+    return str(safe_python)
+
+
 @pytest.fixture(scope="session")
 def spark(tmp_path_factory):
+    python_executable = _get_safe_python_executable()
+    os.environ["PYSPARK_PYTHON"] = python_executable
+    os.environ["PYSPARK_DRIVER_PYTHON"] = python_executable
     os.environ["SPARK_LOCAL_IP"] = "127.0.0.1"
+    os.environ["SPARK_LOCAL_DIRS"] = str(tmp_path_factory.mktemp("spark-local"))
     local_spark_directory = tmp_path_factory.mktemp("spark-local")
 
     java_options = (
