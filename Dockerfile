@@ -1,13 +1,27 @@
-FROM python:3.12-slim
+FROM python:3.10-slim
 
+# Install Java 17 (use available package)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jre-headless \
+    default-jdk-headless \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy project
+COPY . /app
 
-COPY backend ./backend
-COPY data/demo ./data/demo
+# Create venv and install dependencies
+RUN python3 -m venv /app/.venv
+RUN /app/.venv/bin/pip install --upgrade pip
+RUN /app/.venv/bin/pip install -r requirements.txt
 
-EXPOSE 8000
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Spark config
+ENV SPARK_LOCAL_IP=127.0.0.1
+ENV PYTHONUNBUFFERED=1
+
+# Default command
+CMD ["/app/.venv/bin/python", "-m", "pytest", "ml/tests/test_user_features.py", "-v"]
 
