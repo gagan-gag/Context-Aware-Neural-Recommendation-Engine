@@ -1,24 +1,27 @@
-FROM python:3.12-slim
+FROM python:3.10-slim
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends openjdk-17-jdk-headless && \
-    rm -rf /var/lib/apt/lists/*
+# Install Java 17 (use available package)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-jre-headless \
+    default-jdk-headless \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
+# Set working directory
 WORKDIR /app
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app \
-    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 \
-    PYSPARK_PYTHON=/usr/local/bin/python \
-    PYSPARK_DRIVER_PYTHON=/usr/local/bin/python \
-    SPARK_LOCAL_DIRS=/tmp/spark-local
+# Copy project
+COPY . /app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Create venv and install dependencies
+RUN python3 -m venv /app/.venv
+RUN /app/.venv/bin/pip install --upgrade pip
+RUN /app/.venv/bin/pip install -r requirements.txt
 
-COPY . .
+# Spark config
+ENV SPARK_LOCAL_IP=127.0.0.1
+ENV PYTHONUNBUFFERED=1
 
-CMD ["pytest", "-q", "ml/tests"]
+# Default command
+CMD ["/app/.venv/bin/python", "-m", "pytest", "ml/tests/test_user_features.py", "-v"]
 

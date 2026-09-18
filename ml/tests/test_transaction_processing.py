@@ -16,7 +16,7 @@ from ml.data.transaction_processing import (
 
 def _get_safe_python_executable() -> str:
     current_python = Path(sys.executable).resolve()
-    if current_python.exists() and "'" not in str(current_python) and " " not in str(current_python):
+    if current_python.exists():
         return str(current_python)
 
     safe_dir = Path(os.environ.get("TEMP", "/tmp")) / "avero-spark-runtime"
