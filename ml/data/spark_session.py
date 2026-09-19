@@ -35,22 +35,26 @@ def _resolve_java_home() -> str | None:
 
 
 def _get_safe_python_executable() -> str:
-    """Return the active interpreter for Spark workers.
+    """Return a Spark-safe Python executable for worker processes.
 
-    Copying the venv Python into a temp directory breaks PySpark worker startup
-    when the workspace path contains characters such as apostrophes because the
-    copied executable is no longer a valid venv interpreter (missing pyvenv.cfg).
+    The active venv may live under a workspace path containing apostrophes or
+    other special characters. PySpark expects a valid venv layout, so we copy
+    the entire environment into a neutral temp directory and point Spark at the
+    copied interpreter instead of the original workspace path.
     """
     current_python = Path(sys.executable).resolve()
-    if current_python.exists():
-        return str(current_python)
+    current_venv_root = current_python.parent.parent
 
     safe_dir = Path(tempfile.gettempdir()) / "avero-spark-runtime"
-    safe_dir.mkdir(parents=True, exist_ok=True)
-    safe_python = safe_dir / "python.exe"
+    safe_python = safe_dir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+
+    if not safe_python.exists() or not (safe_dir / "pyvenv.cfg").exists():
+        if safe_dir.exists():
+            shutil.rmtree(safe_dir, ignore_errors=True)
+        shutil.copytree(current_venv_root, safe_dir, dirs_exist_ok=False)
 
     if not safe_python.exists():
-        shutil.copy2(current_python, safe_python)
+        raise FileNotFoundError(f"Spark-safe Python interpreter not found at {safe_python}")
 
     return str(safe_python)
 

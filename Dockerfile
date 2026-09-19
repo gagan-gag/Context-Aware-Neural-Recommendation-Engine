@@ -21,7 +21,8 @@ RUN /app/.venv/bin/pip install -r requirements.txt
 # Spark config
 ENV SPARK_LOCAL_IP=127.0.0.1
 ENV PYTHONUNBUFFERED=1
+ENV PATH=/app/.venv/bin:$PATH
 
 # Default command
-CMD ["/app/.venv/bin/python", "-m", "pytest", "ml/tests/test_user_features.py", "-v"]
+CMD ["python", "-m", "pytest"]
 
