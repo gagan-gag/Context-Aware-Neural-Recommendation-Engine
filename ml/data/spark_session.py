@@ -13,14 +13,17 @@ LOCAL_SPARK_DIR = Path(tempfile.gettempdir()) / "avero-spark"
 
 def _resolve_java_home() -> str | None:
     """Prefer a supported JDK 17 when multiple JDKs are installed."""
-    candidates = [
-        os.environ.get("JAVA_HOME"),
+    preferred_candidates = [
         r"C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot",
         r"C:\Program Files\Java\jdk-17",
         r"C:\Program Files\Java\jdk-17.0.2",
     ]
 
-    for candidate in candidates:
+    env_java_home = os.environ.get("JAVA_HOME")
+    if env_java_home and "jdk-17" in env_java_home.lower():
+        preferred_candidates.insert(0, env_java_home)
+
+    for candidate in preferred_candidates:
         if not candidate:
             continue
         java_bin = Path(candidate) / "bin" / ("java.exe" if os.name == "nt" else "java")
@@ -29,7 +32,9 @@ def _resolve_java_home() -> str | None:
 
     java_path = shutil.which("java")
     if java_path:
-        return str(Path(java_path).resolve().parent.parent)
+        java_home = Path(java_path).resolve().parent.parent
+        if "jdk-17" in str(java_home).lower():
+            return str(java_home)
 
     return None
 
