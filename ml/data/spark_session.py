@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import tempfile
+import uuid
 from pathlib import Path
 
 from pyspark.sql import SparkSession
@@ -46,17 +47,40 @@ def _get_safe_python_executable() -> str:
     other special characters. PySpark expects a valid venv layout, so we copy
     the entire environment into a neutral temp directory and point Spark at the
     copied interpreter instead of the original workspace path.
+
+    The temp copy must also be refreshed whenever the active venv is updated,
+    otherwise Spark workers may start with a stale interpreter that is missing
+    required project packages such as numpy.
     """
     current_python = Path(sys.executable).resolve()
     current_venv_root = current_python.parent.parent
 
     safe_dir = Path(tempfile.gettempdir()) / "avero-spark-runtime"
     safe_python = safe_dir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    safe_site_packages = safe_dir / (
+        "Lib/site-packages"
+        if os.name == "nt"
+        else f"lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
+    )
 
-    if not safe_python.exists() or not (safe_dir / "pyvenv.cfg").exists():
+    needs_refresh = (
+        not safe_python.exists()
+        or not (safe_dir / "pyvenv.cfg").exists()
+        or not safe_site_packages.exists()
+        or not (safe_site_packages / "numpy").exists()
+        or not (safe_site_packages / "pyspark").exists()
+    )
+
+    if needs_refresh:
         if safe_dir.exists():
             shutil.rmtree(safe_dir, ignore_errors=True)
-        shutil.copytree(current_venv_root, safe_dir, dirs_exist_ok=False)
+        try:
+            shutil.copytree(current_venv_root, safe_dir, dirs_exist_ok=False)
+        except FileExistsError:
+            fallback_dir = Path(tempfile.gettempdir()) / f"avero-spark-runtime-{uuid.uuid4().hex}"
+            shutil.copytree(current_venv_root, fallback_dir, dirs_exist_ok=False)
+            safe_dir = fallback_dir
+            safe_python = safe_dir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
 
     if not safe_python.exists():
         raise FileNotFoundError(f"Spark-safe Python interpreter not found at {safe_python}")
