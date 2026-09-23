@@ -6,5 +6,5 @@ pytest==8.4.1
 httpx==0.28.1
 pyspark==3.5.1
 numpy>=1.26.0,<3.0.0
-tensorflow==2.15.0
-tensorflow-recommenders==0.12.1
+tensorflow==2.18.1
+tensorflow-recommenders==0.7.7
