@@ -12,3 +12,17 @@ __all__ = [
     "CandidateTowerRefined",
     "IntegratedTwoTowerModel",
 ]
+
+from ml.models.negative_sampling import (
+    NegativeSamplingLoss,
+    InBatchNegativeSampling,
+    HardNegativeSampling,
+    CurriculumNegativeSampling,
+)
+
+__all__.extend([
+    "NegativeSamplingLoss",
+    "InBatchNegativeSampling",
+    "HardNegativeSampling",
+    "CurriculumNegativeSampling",
+])
