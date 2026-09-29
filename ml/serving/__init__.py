@@ -1,5 +1,6 @@
 """Model serving module."""
 from .model_server import ModelServer
+from .batch_processor import BatchProcessor
 from .schemas import (
     RecommendationRequest,
     RecommendationResponse,
@@ -9,14 +10,17 @@ from .schemas import (
     ModelInfoResponse
 )
 from .app import app
+from .optimized_app import app as optimized_app
 
 __all__ = [
     "ModelServer",
+    "BatchProcessor",
     "RecommendationRequest",
     "RecommendationResponse",
     "BatchRecommendationRequest",
     "BatchRecommendationResponse",
     "HealthResponse",
     "ModelInfoResponse",
-    "app"
+    "app",
+    "optimized_app"
 ]
