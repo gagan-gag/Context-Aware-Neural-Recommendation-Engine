@@ -9,3 +9,4 @@ numpy>=1.26.0,<3.0.0
 tensorflow==2.18.1
 tensorflow-recommenders==0.7.7
 pytest-asyncio==0.23.0
+redis==5.0.1
