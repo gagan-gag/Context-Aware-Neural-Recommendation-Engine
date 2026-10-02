@@ -46,11 +46,7 @@ class ModelServer:
             print(f"❌ Error loading model: {e}")
             self.model_loaded = False
     
-    def get_recommendations(self,
-                           user_id: int,
-                           user_features: np.ndarray,
-                           context_features: np.ndarray,
-                           k: int = 10) -> Dict:
+    def get_recommendations(self, user_id, user_features, context_features, k=5):
         """
         Get recommendations for single user.
         
