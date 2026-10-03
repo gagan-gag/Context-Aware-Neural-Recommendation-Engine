@@ -11,3 +11,5 @@ tensorflow==2.18.1
 tensorflow-recommenders==0.7.7
 pytest-asyncio==1.1.0
 redis==5.0.1
+apache-airflow==2.9.3
+apache-airflow-providers-http==4.7.0
