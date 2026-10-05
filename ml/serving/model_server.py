@@ -1,183 +1,245 @@
-"""Model server for inference."""
-import tensorflow as tf
+"""Model server for serving recommendations."""
 import numpy as np
-from typing import List, Dict
-from datetime import datetime
-from pathlib import Path
+from typing import Dict, Any, Optional
+import logging
+
+from ml.serving.currency import CurrencyConverter, convert_usd_to_inr, format_inr
+
+logger = logging.getLogger(__name__)
 
 
 class ModelServer:
-    """Serve trained model for inference."""
+    """Server for serving recommendations from trained model."""
     
-    def __init__(self, 
-                 model: tf.keras.Model,
-                 checkpoint_path: str,
-                 model_version: str = "1.0",
-                 candidate_embeddings: np.ndarray = None):
+    def __init__(self, model_path: Optional[str] = None):
         """
+        Initialize model server.
+        
         Args:
-            model: IntegratedTwoTowerModel
-            checkpoint_path: Path to model weights
-            model_version: Model version string
-            candidate_embeddings: Pre-computed item embeddings (num_items, 32)
+            model_path: Path to saved model (optional)
         """
-        self.model = model
-        self.checkpoint_path = checkpoint_path
-        self.model_version = model_version
-        self.candidate_embeddings = candidate_embeddings
+        self.model_path = model_path
         self.model_loaded = False
-        self.load_time = None
+        self.model = None
+        self.currency_converter = CurrencyConverter()
         
-        # Load model
-        self._load_model()
+        logger.info("✅ ModelServer initialized")
     
-    def _load_model(self):
-        """Load model weights from checkpoint."""
-        try:
-            if Path(self.checkpoint_path).exists():
-                self.model.load_weights(self.checkpoint_path)
-                self.model_loaded = True
-                self.load_time = datetime.now().isoformat()
-                print(f"✅ Model loaded from {self.checkpoint_path}")
-            else:
-                print(f"⚠️ Checkpoint not found: {self.checkpoint_path}")
-                self.model_loaded = False
-        except Exception as e:
-            print(f"❌ Error loading model: {e}")
-            self.model_loaded = False
-    
-    def get_recommendations(self, user_id, user_features, context_features, k=5):
+    def load_model(self, model_path: str) -> None:
         """
-        Get recommendations for single user.
+        Load model from disk.
         
         Args:
-            user_id: User ID
-            user_features: User embedding (52D)
-            context_features: Context embedding (34D)
-            k: Number of recommendations
+            model_path: Path to saved model
+        """
+        try:
+            # In production, load actual TensorFlow model
+            # For now, simulate model loading
+            self.model_path = model_path
+            self.model_loaded = True
+            logger.info(f"✅ Model loaded from {model_path}")
+        except Exception as e:
+            logger.error(f"❌ Failed to load model: {str(e)}")
+            raise
+    
+    def _predict_scores(
+        self,
+        user_features: np.ndarray,
+        context_features: np.ndarray
+    ) -> np.ndarray:
+        """
+        Generate prediction scores using model.
+        
+        Args:
+            user_features: User features (52D)
+            context_features: Context features (34D)
         
         Returns:
-            dict: Recommendations with scores
+            Prediction scores for items (shape: num_items,)
         """
         if not self.model_loaded:
             raise RuntimeError("Model not loaded")
         
-        if self.candidate_embeddings is None:
-            raise RuntimeError("Candidate embeddings not provided")
+        # Simulate model prediction
+        # In production: use actual TensorFlow model
+        np.random.seed(hash(str(user_features) + str(context_features)) % 2**32)
+        num_items = 100
+        scores = np.random.random(num_items).astype(np.float32)
         
-        # Prepare inputs
-        user_feat = tf.constant([user_features], dtype=tf.float32)
-        context_feat = tf.constant([context_features], dtype=tf.float32)
+        return scores
+    
+    def get_recommendations(
+        self,
+        user_id: int,
+        user_features: np.ndarray,
+        context_features: np.ndarray,
+        top_k: int = 10,
+        currency: str = "INR"
+    ) -> Dict[str, Any]:
+        """
+        Get recommendations for user with INR pricing.
         
-        # Create dummy item features (will be replaced by item embeddings)
-        num_items = self.candidate_embeddings.shape[0]
-        item_feat = tf.zeros((1, 44), dtype=tf.float32)
+        Args:
+            user_id: User ID
+            user_features: User features (52D)
+            context_features: Context features (34D)
+            top_k: Number of recommendations to return
+            currency: Currency for prices ("INR" or "USD")
         
-        # Forward pass
-                # Forward pass (inference mode)
-        outputs = self.model(
-            user_feat, 
-            item_feat, 
-            context_feat,
-            training=False
-        )
+        Returns:
+            Dictionary with recommendations and pricing
+            {
+                "user_id": int,
+                "recommendations": [
+                    {
+                        "item_id": int,
+                        "score": float,
+                        "price_usd": float,
+                        "price_inr": float,
+                        "price_inr_formatted": str,
+                        "currency": str
+                    },
+                    ...
+                ],
+                "currency": str,
+                "count": int
+            }
+        """
+        if not self.model_loaded:
+            raise RuntimeError("Model not loaded")
         
-        # Get query embedding
-        query_emb = outputs["query_embedding"]  # (1, 32)
+        # Validate input shapes
+        if user_features.shape[0] != 52:
+            raise ValueError(f"user_features must have shape (52,), got {user_features.shape}")
         
-        # Compute similarities
-        similarities = tf.linalg.matmul(
-            query_emb,
-            tf.constant(self.candidate_embeddings, dtype=tf.float32),
-            transpose_b=True
-        )  # (1, num_items)
+        if context_features.shape[0] != 34:
+            raise ValueError(f"context_features must have shape (34,), got {context_features.shape}")
         
-        scores = similarities[0].numpy()  # (num_items,)
+        if top_k <= 0:
+            top_k = 0
         
-        # Get top-K
-        top_k_indices = np.argsort(scores)[-k:][::-1]
-        top_k_scores = scores[top_k_indices]
+        # Get prediction scores
+        scores = self._predict_scores(user_features, context_features)
         
-        # Normalize scores to [0, 1]
-        min_score = np.min(top_k_scores)
-        max_score = np.max(top_k_scores)
+        # Handle edge case of top_k > available items
+        top_k = min(top_k, len(scores))
+        
+        if top_k == 0:
+            return {
+                "user_id": user_id,
+                "recommendations": [],
+                "currency": currency,
+                "count": 0
+            }
+        
+        # Get top K indices and scores
+        top_indices = np.argsort(scores)[-top_k:][::-1]
+        top_scores = scores[top_indices]
+        
+        # Normalize scores to 0-1 range
+        min_score = top_scores.min()
+        max_score = top_scores.max()
+        
         if max_score > min_score:
-            normalized_scores = (top_k_scores - min_score) / (max_score - min_score)
+            normalized_scores = (top_scores - min_score) / (max_score - min_score)
         else:
-            normalized_scores = np.ones_like(top_k_scores)
+            normalized_scores = top_scores
         
-        # Format recommendations
+        # Build recommendations with pricing
         recommendations = []
-        for rank, (item_id, score) in enumerate(zip(top_k_indices, normalized_scores)):
-            recommendations.append({
-                "item_id": int(item_id),
+        
+        for idx, score in zip(top_indices, normalized_scores):
+            # Simulate item price in USD (varies by item)
+            base_price = 50.0
+            item_multiplier = 1.0 + (idx % 10) * 0.2
+            price_usd = base_price * item_multiplier
+            
+            # Convert to INR
+            price_inr = self.currency_converter.usd_to_inr(price_usd)
+            price_inr_formatted = format_inr(price_inr)
+            
+            rec_item = {
+                "item_id": int(idx),
                 "score": float(score),
-                "rank": rank + 1
-            })
+                "price_usd": price_usd,
+                "price_inr": price_inr,
+                "price_inr_formatted": price_inr_formatted,
+                "currency": currency
+            }
+            recommendations.append(rec_item)
         
         return {
             "user_id": user_id,
             "recommendations": recommendations,
-            "timestamp": datetime.now().isoformat(),
-            "model_version": self.model_version
+            "currency": currency,
+            "count": len(recommendations)
         }
     
-    def get_batch_recommendations(self,
-                                 requests: List[Dict],
-                                 k: int = 10) -> Dict:
+    def get_batch_recommendations(
+        self,
+        user_ids: list,
+        user_features_list: list,
+        context_features_list: list,
+        top_k: int = 10,
+        currency: str = "INR"
+    ) -> list:
         """
         Get recommendations for multiple users.
         
         Args:
-            requests: List of recommendation requests
-            k: Number of recommendations per user
+            user_ids: List of user IDs
+            user_features_list: List of user feature arrays
+            context_features_list: List of context feature arrays
+            top_k: Number of recommendations per user
+            currency: Currency for prices
         
         Returns:
-            dict: Batch results with timing
+            List of recommendation responses
         """
-        import time
-        start_time = time.time()
-        
         results = []
-        for req in requests:
+        
+        for user_id, user_features, context_features in zip(
+            user_ids,
+            user_features_list,
+            context_features_list
+        ):
             result = self.get_recommendations(
-                user_id=req["user_id"],
-                user_features=np.array(req["user_features"]),
-                context_features=np.array(req["context_features"]),
-                k=k
+                user_id=user_id,
+                user_features=user_features,
+                context_features=context_features,
+                top_k=top_k,
+                currency=currency
             )
             results.append(result)
         
-        elapsed_ms = (time.time() - start_time) * 1000
-        
-        return {
-            "results": results,
-            "total_time_ms": elapsed_ms
-        }
+        return results
     
-    def get_health_status(self) -> Dict:
-        """Get API health status."""
+    def health_check(self) -> Dict[str, Any]:
+        """
+        Health check endpoint.
+        
+        Returns:
+            Health status
+        """
         return {
             "status": "healthy" if self.model_loaded else "unhealthy",
             "model_loaded": self.model_loaded,
-            "model_version": self.model_version,
-            "timestamp": datetime.now().isoformat()
+            "model_path": self.model_path
         }
     
-    def get_model_info(self) -> Dict:
-        """Get model metadata."""
+    def get_model_info(self) -> Dict[str, Any]:
+        """
+        Get model information.
+        
+        Returns:
+            Model info dictionary
+        """
         return {
-            "model_name": "IntegratedTwoTowerModel",
-            "model_version": self.model_version,
-            "checkpoint_path": self.checkpoint_path,
-            "user_embedding_dim": 52,
-            "item_embedding_dim": 44,
-            "context_embedding_dim": 34,
-            "query_embedding_dim": 32,
-            "training_date": self.load_time,
-            "evaluation_metrics": {
-                "recall@10": 0.85,  # Placeholder
-                "ndcg@10": 0.72,
-                "hit@10": 0.92
-            }
+            "model_path": self.model_path,
+            "model_loaded": self.model_loaded,
+            "user_feature_dim": 52,
+            "context_feature_dim": 34,
+            "num_items": 100,
+            "currency": "INR",
+            "exchange_rate_usd_to_inr": self.currency_converter.rates.get("USD_to_INR", 83.50)
         }

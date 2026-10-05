@@ -1,37 +1,31 @@
-"""Model serving module."""
-from .model_server import ModelServer
-from .batch_processor import BatchProcessor
-from .cached_model_server import CachedModelServer
-from .redis_feature_store import RedisFeatureStore
-from .stream_handler import StreamEvent, StreamProcessor
+"""Serving module for recommendations."""
 from .schemas import (
+    RecommendationItem,
     RecommendationRequest,
     RecommendationResponse,
+    HealthCheckResponse,
     BatchRecommendationRequest,
     BatchRecommendationResponse,
-    HealthResponse,
+    ErrorResponse,
     ModelInfoResponse
 )
-from .app import app
-from .optimized_app import app as optimized_app
-from .cached_app import app as cached_app
-from .stream_app import app as stream_app
+from .model_server import ModelServer
+from .currency import CurrencyConverter, convert_usd_to_inr, format_inr
+from .stream_handler import StreamEvent, StreamProcessor
 
 __all__ = [
-    "ModelServer",
-    "BatchProcessor",
-    "CachedModelServer",
-    "RedisFeatureStore",
-    "StreamEvent",
-    "StreamProcessor",
+    "RecommendationItem",
     "RecommendationRequest",
     "RecommendationResponse",
+    "HealthCheckResponse",
     "BatchRecommendationRequest",
     "BatchRecommendationResponse",
-    "HealthResponse",
+    "ErrorResponse",
     "ModelInfoResponse",
-    "app",
-    "optimized_app",
-    "cached_app",
-    "stream_app"
+    "ModelServer",
+    "CurrencyConverter",
+    "convert_usd_to_inr",
+    "format_inr",
+    "StreamEvent",
+    "StreamProcessor",
 ]
