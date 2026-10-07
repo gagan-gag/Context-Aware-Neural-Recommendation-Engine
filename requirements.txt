@@ -6,7 +6,7 @@ pydantic-settings==2.10.1
 pytest==8.4.1
 httpx==0.28.1
 pyspark==3.5.1
-numpy>=1.26.0,<3.0.0
+numpy==2.0.2
 tensorflow==2.18.1
 tensorflow-recommenders==0.7.7
 pytest-asyncio==1.1.0
