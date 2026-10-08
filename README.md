@@ -73,4 +73,3 @@ Clean transaction output is saved to:
 ```
 data/processed/transactions/
 ```
-
