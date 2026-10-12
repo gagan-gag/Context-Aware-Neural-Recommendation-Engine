@@ -19,7 +19,11 @@ def get_recommendations(user_id: str, k: int) -> RecommendationResponse:
     users = {user["user_id"]: user for user in _load_json("users.json")}
     user = users.get(user_id)
     if user is None:
-        user = list(users.values())[0] if users else {"user_id": user_id, "name": "Shopper", "preferred_category": "Dresses"}
+        if user_id in ("test", "demo", "default"):
+            user = list(users.values())[0] if users else {"user_id": user_id, "name": "Shopper", "preferred_category": "Dresses"}
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unknown user_id: {user_id}")
+
     products = [Product.model_validate(product) for product in _load_json("products.json")]
     preferred_category = user["preferred_category"]
     ranked = sorted(products, key=lambda product: (product.category == preferred_category, product.article_id), reverse=True)[:k]

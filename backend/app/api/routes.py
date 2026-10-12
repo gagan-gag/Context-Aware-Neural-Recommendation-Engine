@@ -12,7 +12,8 @@ router = APIRouter()
 @router.get("/health", response_model=HealthResponse, tags=["system"])
 def health() -> HealthResponse:
     settings = get_settings()
-    return HealthResponse(status="healthy", mode=settings.mode, service=settings.app_name)
+    return HealthResponse(status="ok", mode=settings.mode, service=settings.app_name)
+
 
 
 @router.get("/api/recommendations", response_model=RecommendationResponse, tags=["recommendations"])
