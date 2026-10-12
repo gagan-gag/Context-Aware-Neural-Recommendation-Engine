@@ -15,6 +15,29 @@ def health() -> HealthResponse:
     return HealthResponse(status="ok", mode=settings.mode, service=settings.app_name)
 
 
+
+@router.get("/api/recommendations", response_model=RecommendationResponse, tags=["recommendations"])
+def recommendations_query(
+    user_id: Annotated[str, Query(min_length=1, max_length=100)] = "test",
+    top_k: Annotated[int, Query(ge=1, le=50)] = 10,
+) -> RecommendationResponse:
+    return get_recommendations(user_id, top_k)
+
+
 @router.get("/api/v1/recommendations/{user_id}", response_model=RecommendationResponse, tags=["recommendations"])
-def recommendations(user_id: Annotated[str, Path(min_length=1, max_length=100)], k: Annotated[int, Query(ge=1, le=20)] = 10) -> RecommendationResponse:
+def recommendations(user_id: Annotated[str, Path(min_length=1, max_length=100)], k: Annotated[int, Query(ge=1, le=50)] = 10) -> RecommendationResponse:
     return get_recommendations(user_id, k)
+
+
+@router.get("/api/trending", response_model=RecommendationResponse, tags=["recommendations"])
+def trending_products(k: Annotated[int, Query(ge=1, le=50)] = 12) -> RecommendationResponse:
+    from backend.app.services.demo_catalog import get_trending
+    return get_trending(k)
+
+
+@router.get("/api/categories", tags=["recommendations"])
+def catalog_categories() -> dict:
+    from backend.app.services.demo_catalog import get_categories
+    return {"categories": get_categories()}
+
+

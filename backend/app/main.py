@@ -14,7 +14,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",   # Vite dev
+        "http://localhost:3000",   # Next.js dev
+        "http://frontend:3000",    # Docker network
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=False,
     allow_methods=["GET"],
     allow_headers=["*"],

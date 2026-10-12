@@ -1,0 +1,15 @@
+# AVERO ML Stack — requires Python 3.12 or lower
+# Create a dedicated venv: python3.12 -m venv .venv-ml
+# Then: pip install -r requirements-ml.txt
+
+-r requirements.txt
+
+# ML / Data Science
+pyspark==3.5.1
+numpy==1.26.4
+tensorflow==2.16.2
+tensorflow-recommenders==0.7.7
+
+# Orchestration
+apache-airflow==2.9.3
+apache-airflow-providers-http==4.7.0

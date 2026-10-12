@@ -8,6 +8,12 @@ class Product(BaseModel):
     color: str
     price: float = Field(ge=0)
     image_url: str | None = None
+    product_id: str | None = None
+    product_name: str | None = None
+    price_usd: float | None = None
+    price_inr: float | None = None
+    price_inr_formatted: str | None = None
+    rating: float | None = 4.8
 
 
 class Recommendation(Product):
@@ -22,6 +28,7 @@ class RecommendationResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    status: str
+    status: str = "healthy"
     mode: str
     service: str
+

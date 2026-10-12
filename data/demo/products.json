@@ -1,7 +1,14 @@
 [
-  {"article_id": "RN-1001", "name": "Satin Midi Dress", "category": "Dresses", "color": "Emerald", "price": 49.99, "image_url": null},
-  {"article_id": "RN-1002", "name": "Cotton Poplin Dress", "category": "Dresses", "color": "Ivory", "price": 39.99, "image_url": null},
-  {"article_id": "RN-2001", "name": "Relaxed Oxford Shirt", "category": "Shirts", "color": "Sky Blue", "price": 34.99, "image_url": null},
-  {"article_id": "RN-3001", "name": "Wide Leg Trousers", "category": "Trousers", "color": "Black", "price": 54.99, "image_url": null},
-  {"article_id": "RN-4001", "name": "Structured Blazer", "category": "Outerwear", "color": "Sand", "price": 89.99, "image_url": null}
+  {"article_id": "RN-1001", "name": "Satin Midi Slip Dress", "category": "Dresses", "color": "Emerald", "price": 49.99, "image_url": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-1002", "name": "Cotton Poplin Maxi Dress", "category": "Dresses", "color": "Ivory", "price": 39.99, "image_url": "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-2001", "name": "Relaxed Oxford Cotton Shirt", "category": "Shirts", "color": "Sky Blue", "price": 34.99, "image_url": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-3001", "name": "Tailored Wide Leg Trousers", "category": "Trousers", "color": "Black", "price": 54.99, "image_url": "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-4001", "name": "Structured Wool Blend Blazer", "category": "Outerwear", "color": "Sand", "price": 89.99, "image_url": "https://images.unsplash.com/photo-1544441893-675973e31985?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-1003", "name": "Ribbed Knit Bodycon Dress", "category": "Dresses", "color": "Burgundy", "price": 44.99, "image_url": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-2002", "name": "Silk Blend Evening Blouse", "category": "Shirts", "color": "Champagne", "price": 59.99, "image_url": "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-3002", "name": "Pleated High-Rise Pants", "category": "Trousers", "color": "Olive", "price": 49.99, "image_url": "https://images.unsplash.com/photo-1584370848010-d7fe6bc767ec?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-4002", "name": "Cashmere Double-Breasted Coat", "category": "Outerwear", "color": "Camel", "price": 149.99, "image_url": "https://images.unsplash.com/photo-1539533018447-63fcce667823?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-1004", "name": "Linen Wrap Summer Dress", "category": "Dresses", "color": "Terracotta", "price": 52.99, "image_url": "https://images.unsplash.com/photo-1568252542512-9fe8fe9c87bb?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-2003", "name": "Oversized Denim Overshirt", "category": "Shirts", "color": "Indigo", "price": 42.99, "image_url": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800&auto=format&fit=crop&q=80"},
+  {"article_id": "RN-4003", "name": "Minimalist Trench Duster", "category": "Outerwear", "color": "Oatmeal", "price": 119.99, "image_url": "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&auto=format&fit=crop&q=80"}
 ]
