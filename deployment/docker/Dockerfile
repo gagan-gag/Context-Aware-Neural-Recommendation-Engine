@@ -1,59 +1,52 @@
-# Multi-stage build for AVERO Recommendation Engine
-FROM python:3.12.8-slim AS builder
+# Multi-stage build for AVERO Backend (FastAPI)
+FROM python:3.12-slim AS builder
 
-# Install system dependencies
+# Install build deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    git \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements
+# Install Python deps first (layer cache)
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
-# Create wheels for dependencies
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+# ─── Runtime stage ────────────────────────────────────────────────────────────
+FROM python:3.12-slim
 
-# Final stage
-FROM python:3.12.8-slim
-
-# Install runtime dependencies only
+# Runtime system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
+# Non-root user
 RUN useradd -m -u 1000 avero && \
-    mkdir -p /app /data && \
+    mkdir -p /app /data /app/logs && \
     chown -R avero:avero /app /data
 
 WORKDIR /app
 
-# Copy wheels from builder
+# Install wheels
 COPY --from=builder /app/wheels /wheels
 COPY --from=builder /app/requirements.txt .
+RUN pip install --no-cache-dir --no-index /wheels/* && rm -rf /wheels
 
-# Install Python dependencies from wheels
-RUN pip install --no-cache /wheels/*
-
-# Copy application code
+# Copy application source
 COPY --chown=avero:avero . .
 
-# Create necessary directories
-RUN mkdir -p ml/versioning ml/airflow/dags checkpoints logs && \
+# Create runtime dirs
+RUN mkdir -p ml/versioning checkpoints logs && \
     chown -R avero:avero ml checkpoints logs
 
-# Switch to non-root user
 USER avero
 
-# Expose ports
-EXPOSE 8000 5000 6379
+EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Default command: Start FastAPI server
-CMD ["python", "-m", "uvicorn", "ml.serving.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Entry: FastAPI via backend.app.main
+CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
