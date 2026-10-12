@@ -1,4 +1,3 @@
-"""FastAPI application for model serving."""
 import logging
 from datetime import datetime
 from typing import Optional
@@ -6,7 +5,9 @@ import numpy as np
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+
 
 from ml.serving.schemas import (
     RecommendationRequest,
@@ -16,6 +17,7 @@ from ml.serving.schemas import (
 )
 from ml.serving.model_server import ModelServer
 from ml.serving.currency import format_inr
+
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +31,14 @@ app = FastAPI(
     title="AVERO Recommendation Engine",
     description="Context-Aware Neural Recommendation System with INR Pricing",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Global model server
@@ -57,15 +67,18 @@ def init_model():
 async def root():
     """Root endpoint."""
     return {
+        "message": "AVERO Recommendation Engine",
         "service": "AVERO Recommendation Engine",
         "version": "1.0.0",
         "currency": "INR",
+        "docs": "/docs",
         "endpoints": {
             "recommendations": "/recommendations",
             "health": "/health",
             "model_info": "/model_info"
         }
     }
+
 
 
 @app.get("/health", response_model=HealthCheckResponse, tags=["Health"])
@@ -84,6 +97,7 @@ async def health_check():
     )
 
 
+@app.get("/model-info", tags=["Info"])
 @app.get("/model_info", tags=["Info"])
 async def get_model_info():
     """Get model information."""
@@ -94,6 +108,7 @@ async def get_model_info():
         )
     
     return model_server.get_model_info()
+
 
 
 @app.post("/recommendations", response_model=RecommendationResponse, tags=["Recommendations"])

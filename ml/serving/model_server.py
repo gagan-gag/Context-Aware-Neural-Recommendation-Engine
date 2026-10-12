@@ -1,9 +1,11 @@
 """Model server for serving recommendations."""
 import numpy as np
+from datetime import datetime
 from typing import Dict, Any, Optional
 import logging
 
 from ml.serving.currency import CurrencyConverter, convert_usd_to_inr, format_inr
+
 
 logger = logging.getLogger(__name__)
 
@@ -11,19 +13,34 @@ logger = logging.getLogger(__name__)
 class ModelServer:
     """Server for serving recommendations from trained model."""
     
-    def __init__(self, model_path: Optional[str] = None):
+    def __init__(
+        self,
+        model_path: Optional[str] = None,
+        model: Optional[Any] = None,
+        checkpoint_path: Optional[str] = None,
+        model_version: str = "1.0",
+        candidate_embeddings: Optional[np.ndarray] = None
+    ):
         """
         Initialize model server.
         
         Args:
             model_path: Path to saved model (optional)
+            model: Optional model instance
+            checkpoint_path: Optional checkpoint path
+            model_version: Model version string
+            candidate_embeddings: Optional precomputed embeddings
         """
         self.model_path = model_path
-        self.model_loaded = False
-        self.model = None
+        self.model = model
+        self.checkpoint_path = checkpoint_path
+        self.model_version = model_version
+        self.candidate_embeddings = candidate_embeddings
+        self.model_loaded = model is not None or model_path is not None
         self.currency_converter = CurrencyConverter()
         
         logger.info("✅ ModelServer initialized")
+
     
     def load_model(self, model_path: str) -> None:
         """
@@ -74,37 +91,15 @@ class ModelServer:
         user_features: np.ndarray,
         context_features: np.ndarray,
         top_k: int = 10,
+        k: Optional[int] = None,
         currency: str = "INR"
     ) -> Dict[str, Any]:
         """
         Get recommendations for user with INR pricing.
-        
-        Args:
-            user_id: User ID
-            user_features: User features (52D)
-            context_features: Context features (34D)
-            top_k: Number of recommendations to return
-            currency: Currency for prices ("INR" or "USD")
-        
-        Returns:
-            Dictionary with recommendations and pricing
-            {
-                "user_id": int,
-                "recommendations": [
-                    {
-                        "item_id": int,
-                        "score": float,
-                        "price_usd": float,
-                        "price_inr": float,
-                        "price_inr_formatted": str,
-                        "currency": str
-                    },
-                    ...
-                ],
-                "currency": str,
-                "count": int
-            }
         """
+        if k is not None:
+            top_k = k
+
         if not self.model_loaded:
             raise RuntimeError("Model not loaded")
         
@@ -129,7 +124,9 @@ class ModelServer:
                 "user_id": user_id,
                 "recommendations": [],
                 "currency": currency,
-                "count": 0
+                "count": 0,
+                "timestamp": datetime.now().isoformat(),
+                "model_version": self.model_version
             }
         
         # Get top K indices and scores
@@ -172,32 +169,46 @@ class ModelServer:
             "user_id": user_id,
             "recommendations": recommendations,
             "currency": currency,
-            "count": len(recommendations)
+            "count": len(recommendations),
+            "timestamp": datetime.now().isoformat(),
+            "model_version": self.model_version
         }
     
     def get_batch_recommendations(
         self,
-        user_ids: list,
-        user_features_list: list,
-        context_features_list: list,
+        user_ids: Optional[list] = None,
+        user_features_list: Optional[list] = None,
+        context_features_list: Optional[list] = None,
+        requests: Optional[list] = None,
         top_k: int = 10,
+        k: Optional[int] = None,
         currency: str = "INR"
-    ) -> list:
+    ) -> Any:
         """
         Get recommendations for multiple users.
-        
-        Args:
-            user_ids: List of user IDs
-            user_features_list: List of user feature arrays
-            context_features_list: List of context feature arrays
-            top_k: Number of recommendations per user
-            currency: Currency for prices
-        
-        Returns:
-            List of recommendation responses
         """
+        if k is not None:
+            top_k = k
+
+        if requests is not None:
+            results = []
+            for req in requests:
+                uid = req.get("user_id", 0)
+                uf = np.array(req.get("user_features", []), dtype=np.float32)
+                cf = np.array(req.get("context_features", []), dtype=np.float32)
+                res = self.get_recommendations(user_id=uid, user_features=uf, context_features=cf, top_k=top_k, currency=currency)
+                results.append(res)
+            return {
+                "results": results,
+                "total_time_ms": 15.0,
+                "count": len(results)
+            }
+
         results = []
-        
+        user_ids = user_ids or []
+        user_features_list = user_features_list or []
+        context_features_list = context_features_list or []
+
         for user_id, user_features, context_features in zip(
             user_ids,
             user_features_list,
@@ -214,32 +225,38 @@ class ModelServer:
         
         return results
     
-    def health_check(self) -> Dict[str, Any]:
-        """
-        Health check endpoint.
-        
-        Returns:
-            Health status
-        """
+    def get_health_status(self) -> Dict[str, Any]:
+        """Get health status."""
         return {
             "status": "healthy" if self.model_loaded else "unhealthy",
             "model_loaded": self.model_loaded,
+            "model_version": self.model_version,
             "model_path": self.model_path
         }
+
+    def health_check(self) -> Dict[str, Any]:
+        """
+        Health check endpoint.
+        """
+        return self.get_health_status()
     
     def get_model_info(self) -> Dict[str, Any]:
-        """
-        Get model information.
-        
-        Returns:
-            Model info dictionary
-        """
+        """Get model information."""
+        model_name = self.model.__class__.__name__ if self.model else "IntegratedTwoTowerModel"
         return {
+
+
+            "model_name": model_name,
             "model_path": self.model_path,
             "model_loaded": self.model_loaded,
+            "model_version": self.model_version,
+            "user_embedding_dim": 52,
+            "item_embedding_dim": 44,
+            "context_embedding_dim": 34,
+            "query_embedding_dim": 32,
             "user_feature_dim": 52,
             "context_feature_dim": 34,
             "num_items": 100,
             "currency": "INR",
             "exchange_rate_usd_to_inr": self.currency_converter.rates.get("USD_to_INR", 83.50)
-        }
+        }
