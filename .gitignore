@@ -1,21 +1,42 @@
+# Local Environment & Secrets
 .env
+.env.local
+.env.*.local
+*.log
+
+# Python & Virtual Environments
 .venv/
+venv/
+ENV/
 __pycache__/
-.pytest_cache/
 *.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node & Frontend Build Outputs
 node_modules/
 .pnpm-store/
 dist/
-tmp_plan_render/
+.next/
+out/
+build/
 
-# H&M source dataset - never commit large raw files
+# Spark & Temporary Files
+.spark-local/
+tmp_plan_render/
+tmp_probe.py
+.DS_Store
+Thumbs.db
+
+# Large Datasets & ML Checkpoints
 data/hm/
 data/raw/
+data/processed/
+checkpoints/
+artifacts/
 *.csv
 !data/demo/*.csv
-
-# Generated data and model artifacts
-data/raw/
-# Processed Spark output
-data/processed/
-artifacts/
+*.parquet
+*.h5
+*.keras

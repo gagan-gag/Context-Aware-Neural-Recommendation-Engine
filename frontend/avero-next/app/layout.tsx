@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/Toaster';
-import { ApiHealthBanner } from '@/components/ApiHealthBanner';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -12,57 +11,36 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
-    default: 'AVERO — AI-Powered Recommendation Engine',
+    default: 'AVERO — Fashion That Finds Your Style | AI-Powered Discovery',
     template: '%s | AVERO',
   },
   description:
-    'Discover products curated just for you with AVERO\'s context-aware neural recommendation engine. Luxury fashion meets artificial intelligence.',
+    'AVERO is an AI-powered fashion discovery platform using Context-Aware Neural (CAN) matching on the H&M dataset to deliver personalized recommendations.',
   keywords: [
-    'AI recommendations',
-    'fashion',
-    'personalized shopping',
-    'neural network',
-    'luxury fashion',
-    'context-aware',
+    'AVERO',
+    'AI fashion discovery',
+    'context-aware neural recommendation',
+    'two-tower model',
+    'personalized fashion',
+    'H&M dataset',
   ],
-  authors: [{ name: 'AVERO Team' }],
+  authors: [{ name: 'AVERO' }],
   creator: 'AVERO',
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: 'https://avero.ai',
+    locale: 'en_IN',
     siteName: 'AVERO',
-    title: 'AVERO — AI-Powered Recommendation Engine',
-    description:
-      'Discover products curated just for you with AVERO\'s context-aware neural recommendation engine.',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'AVERO - AI Recommendation Engine',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'AVERO — AI-Powered Recommendation Engine',
-    description: 'Discover products curated just for you.',
-    images: ['/og-image.jpg'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+    title: 'AVERO — Fashion That Finds Your Style',
+    description: 'Personalized recommendations using Context-Aware Neural matching on real fashion data.',
   },
 };
 
@@ -72,17 +50,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`} data-scroll-behavior="smooth">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="canonical" href="https://avero.ai" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#111111" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
-      <body className="bg-black text-white antialiased min-h-screen">
+      <body className="bg-white text-[#171717] antialiased min-h-screen flex flex-col font-sans selection:bg-[#111111] selection:text-white">
         <Navbar />
-        <ApiHealthBanner />
-        <main id="main-content" role="main">
+        <main id="main-content" role="main" className="flex-1">
           {children}
         </main>
         <Footer />

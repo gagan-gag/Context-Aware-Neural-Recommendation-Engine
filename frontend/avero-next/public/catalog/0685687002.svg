@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="beanie-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2D2D30"/>
+      <stop offset="100%" stop-color="#141416"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Ribbed Folded Beanie Cap -->
+    <path d="M 220 480 C 220 310 250 250 300 250 C 350 250 380 310 380 480 Z" fill="url(#beanie-grad)"/>
+    <!-- Folded Ribbed Brim -->
+    <rect x="210" y="460" width="180" height="70" rx="8" fill="#1C1C1E" stroke="#3A3A3E" stroke-width="1.5"/>
+    <!-- Ribbing Lines -->
+    <line x1="230" y1="465" x2="230" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+    <line x1="250" y1="465" x2="250" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+    <line x1="270" y1="465" x2="270" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+    <line x1="290" y1="465" x2="290" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+    <line x1="310" y1="465" x2="310" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+    <line x1="330" y1="465" x2="330" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+    <line x1="350" y1="465" x2="350" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+    <line x1="370" y1="465" x2="370" y2="525" stroke="#3A3A3E" stroke-width="1.5"/>
+  </g>
+</svg>

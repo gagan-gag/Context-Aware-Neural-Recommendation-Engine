@@ -1,96 +1,121 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import { useState } from 'react';
 
 interface OptimizedProductImageProps {
-  src: string;
+  src?: string | null;
   alt: string;
-  fallback?: string;
+  category?: string;
   priority?: boolean;
 }
-
-// Module-level in-memory cache of already-loaded images in this session
-// Prevents ANY re-flashing or skeleton blinking on re-render, hover, or filter
-const LOADED_IMAGES_CACHE = new Set<string>();
 
 export function OptimizedProductImage({
   src,
   alt,
-  fallback = 'https://images.unsplash.com/photo-1544441893-675973e31985?w=800&auto=format&fit=crop&q=80',
-  priority = false,
+  category = 'Collection',
 }: OptimizedProductImageProps) {
-  const isAlreadyCached = LOADED_IMAGES_CACHE.has(src);
-  const [isLoading, setIsLoading] = useState(!isAlreadyCached);
-  const [currentSrc, setCurrentSrc] = useState(src);
   const [hasError, setHasError] = useState(false);
-  const prevSrcRef = useRef(src);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Update image source only if the URL actually changes
-  useEffect(() => {
-    if (prevSrcRef.current !== src) {
-      prevSrcRef.current = src;
-      setCurrentSrc(src);
-      setHasError(false);
-      if (!LOADED_IMAGES_CACHE.has(src)) {
-        setIsLoading(true);
-      } else {
-        setIsLoading(false);
-      }
-    }
-  }, [src]);
-
-  const handleLoadingComplete = () => {
-    LOADED_IMAGES_CACHE.add(currentSrc);
-    setIsLoading(false);
-  };
-
-  const handleError = () => {
-    if (!hasError && currentSrc !== fallback) {
-      setCurrentSrc(fallback);
-      setHasError(true);
-      setIsLoading(false);
-    }
-  };
+  const showFallback = !src || hasError;
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-neutral-900 select-none">
-      {/* Skeleton placeholder while loading - stable pulse, never flashing */}
-      {isLoading && (
+    <>
+      {/* Shimmer while loading */}
+      {!isLoaded && !showFallback && (
         <div
-          className="absolute inset-0 bg-neutral-800 transition-opacity duration-300 pointer-events-none"
-          style={{ willChange: 'opacity' }}
+          className="skeleton-light"
+          style={{ position: 'absolute', inset: 0, zIndex: 1 }}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Actual product image — plain <img> with object-fit: cover */}
+      {!showFallback && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt={alt}
+          className="product-image"
+          style={{
+            opacity: isLoaded ? 1 : 0,
+            transition: 'opacity 400ms ease-out',
+          }}
+          onLoad={() => setIsLoaded(true)}
+          onError={() => setHasError(true)}
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+
+      {/* Fallback placeholder when no image URL or load failed */}
+      {showFallback && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            background: '#F3F3EF',
+            border: '1px solid #EBEBE6',
+          }}
         >
-          <div className="w-full h-full bg-gradient-to-r from-neutral-800 via-neutral-700/50 to-neutral-800 animate-pulse" />
-        </div>
-      )}
-
-      {/* Main product image - zero blinking, smooth fade-in */}
-      <Image
-        src={currentSrc}
-        alt={alt}
-        width={400}
-        height={400}
-        priority={priority}
-        loading={priority ? 'eager' : 'lazy'}
-        quality={85}
-        unoptimized
-        className={`w-full h-full object-cover object-center transition-opacity duration-300 ease-out ${
-          isLoading ? 'opacity-0' : 'opacity-100'
-        }`}
-        onLoad={handleLoadingComplete}
-        onError={handleError}
-      />
-
-      {/* Fallback indicator if both primary and fallback fail */}
-      {hasError && currentSrc === fallback && (
-        <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center p-4">
-          <div className="text-center text-neutral-500">
-            <span className="text-2xl block mb-1">📷</span>
-            <p className="text-[10px] uppercase tracking-wider font-semibold">H&M Collection</p>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              border: '1px solid #D5D5CE',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 10,
+            }}
+          >
+            <svg
+              style={{ width: 20, height: 20, color: '#888880' }}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119.993z"
+              />
+            </svg>
           </div>
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              color: '#888880',
+            }}
+          >
+            AVERO STUDIO
+          </span>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: '#444440',
+              marginTop: 4,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              maxWidth: 120,
+            }}
+          >
+            {category}
+          </p>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -1,91 +1,107 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, Flame } from 'lucide-react';
-import { FilterSidebar } from '@/components/FilterSidebar';
-import { RecommendationGrid } from '@/components/RecommendationGrid';
-import { useStore } from '@/lib/store';
-import { fetchTrending } from '@/lib/api';
-import type { Product } from '@/lib/store';
-import { showToast } from '@/components/Toaster';
+import { useState, useMemo } from 'react';
+import { TrendingUp } from 'lucide-react';
+import { ProductCard } from '@/components/ProductCard';
+import { ProductDetailsModal } from '@/components/ProductDetailsModal';
+import { MOCK_PRODUCTS, Product } from '@/lib/mockProducts';
 
 export default function TrendingPage() {
-  const {
-    trendingProducts, trendingLoading, error,
-    setTrendingProducts, setTrendingLoading, setError,
-  } = useStore();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [activeCategory, setActiveCategory] = useState('all');
 
-  const load = useCallback(async () => {
-    setTrendingLoading(true);
-    setError(null);
-    try {
-      const data = await fetchTrending(16);
-      setTrendingProducts(data.recommendations);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch trending products';
-      setError(message);
-      showToast('Could not load trending products.', 'error');
-    } finally {
-      setTrendingLoading(false);
+  const trendingProducts = useMemo(() => {
+    let list = [...MOCK_PRODUCTS].sort((a, b) => (b.review_count ?? 0) - (a.review_count ?? 0));
+    if (activeCategory !== 'all') {
+      list = list.filter(p => p.category.toLowerCase().includes(activeCategory.toLowerCase()));
     }
-  }, [setTrendingLoading, setError, setTrendingProducts]);
-
-  useEffect(() => {
-    if (trendingProducts.length === 0) {
-      load();
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return list;
+  }, [activeCategory]);
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-      {/* Page Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="mb-10"
-      >
-        <div className="flex items-center gap-2 mb-2">
-          <div className="badge-coral">
-            <Flame size={10} className="fill-current" />
-            Trending Now
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', padding: '40px 0 80px' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 28px' }}>
+        {/* Header */}
+        <div
+          style={{
+            marginBottom: 32,
+            borderBottom: '1px solid #ECECE8',
+            paddingBottom: 24,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <TrendingUp size={14} color="#111" />
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#767676',
+              }}
+            >
+              Curated Popularity
+            </span>
           </div>
+
+          <h1
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 32,
+              fontWeight: 600,
+              color: '#111111',
+              margin: '0 0 8px',
+            }}
+          >
+            Trending Collections
+          </h1>
+          <p style={{ fontSize: 14, color: '#666666', margin: 0, maxWidth: 600 }}>
+            Highest velocity garments and popular silhouettes ranked by interaction frequency across the catalog.
+          </p>
         </div>
-        <h1 className="text-headline mb-2">
-          What&apos;s{' '}
-          <span className="text-coral-gradient">Hot</span>{' '}
-          Right Now
-        </h1>
-        <p className="text-neutral-500 text-sm">
-          Top products based on platform-wide signals — updated hourly
-        </p>
-      </motion.div>
 
-      {/* Trending Indicators */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="flex items-center gap-4 mb-8 flex-wrap"
-      >
-        {['Last 7 days', 'Across all categories', 'Real-time signals'].map((label, i) => (
-          <div key={label} className="flex items-center gap-1.5 text-xs text-neutral-500">
-            <TrendingUp size={11} className="text-[#FF6B35]" />
-            {label}
-          </div>
-        ))}
-      </motion.div>
+        {/* Category Filters */}
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginBottom: 32, paddingBottom: 4 }}>
+          {['all', 'Dresses', 'Tops', 'Shirts & Blouses', 'Trousers', 'Outerwear', 'Knitwear', 'Accessories'].map(cat => {
+            const isSelected = activeCategory.toLowerCase() === cat.toLowerCase();
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                style={{
+                  padding: '7px 16px',
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? '#111111' : '#F5F5F3',
+                  color: isSelected ? '#FFFFFF' : '#333333',
+                  border: 'none',
+                  borderRadius: 20,
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {cat === 'all' ? 'All Trending' : cat}
+              </button>
+            );
+          })}
+        </div>
 
-      {/* Main Layout */}
-      <div className="flex gap-8 items-start">
-        <FilterSidebar />
-        <RecommendationGrid
-          products={trendingProducts}
-          loading={trendingLoading}
-          error={error}
-          title="Trending Products"
-          subtitle="Sorted by popularity across the platform"
+        {/* Product Grid */}
+        <div className="product-grid">
+          {trendingProducts.map((product) => (
+            <ProductCard
+              key={product.product_id || product.article_id}
+              product={product}
+              onClick={(prod) => setSelectedProduct(prod)}
+            />
+          ))}
+        </div>
+
+        {/* Quick View Modal */}
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
         />
       </div>
     </div>

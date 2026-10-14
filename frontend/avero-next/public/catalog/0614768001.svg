@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="turtleneck-black" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#262628"/>
+      <stop offset="100%" stop-color="#141416"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Turtleneck Collar Roll -->
+    <rect x="260" y="140" width="80" height="55" rx="6" fill="#1F1F22" stroke="#3A3A3E" stroke-width="1.5"/>
+    <!-- Sleek Long-Sleeve Silhouette -->
+    <path d="M 260 190 L 180 230 L 130 520 L 170 530 L 205 340 L 210 580 C 210 595 225 605 240 605 L 360 605 C 375 605 390 595 390 580 L 395 340 L 430 530 L 470 520 L 420 230 L 340 190 Z" fill="url(#turtleneck-black)"/>
+    <!-- Fine ribbing lines -->
+    <line x1="265" y1="145" x2="265" y2="190" stroke="#3A3A3E" stroke-width="1"/>
+    <line x1="280" y1="145" x2="280" y2="190" stroke="#3A3A3E" stroke-width="1"/>
+    <line x1="300" y1="145" x2="300" y2="190" stroke="#3A3A3E" stroke-width="1"/>
+    <line x1="320" y1="145" x2="320" y2="190" stroke="#3A3A3E" stroke-width="1"/>
+    <line x1="335" y1="145" x2="335" y2="190" stroke="#3A3A3E" stroke-width="1"/>
+  </g>
+</svg>

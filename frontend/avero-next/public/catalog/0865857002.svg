@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#4A0E17" flood-opacity="0.14"/>
+    </filter>
+    <linearGradient id="satin-burgundy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6B1D2F"/>
+      <stop offset="35%" stop-color="#85253B"/>
+      <stop offset="65%" stop-color="#541424"/>
+      <stop offset="100%" stop-color="#3D0B18"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Cowl neck slip dress -->
+    <path d="M 255 160 L 260 210 Q 300 240 340 210 L 345 160 L 335 160 L 332 205 Q 300 225 268 205 L 265 160 Z" fill="#6B1D2F"/>
+    <!-- Bodice -->
+    <path d="M 260 210 Q 300 235 340 210 L 348 360 C 330 375 270 375 252 360 Z" fill="url(#satin-burgundy)"/>
+    <!-- Midi Skirt with Bias Cut -->
+    <path d="M 252 360 C 240 460 210 560 190 660 Q 300 680 410 660 C 390 560 360 460 348 360 Z" fill="url(#satin-burgundy)"/>
+    <!-- Satin Sheen Shimmer Lines -->
+    <path d="M 275 230 Q 285 450 260 665" stroke="#A83852" stroke-width="3" fill="none" opacity="0.5"/>
+    <path d="M 315 230 Q 325 450 335 665" stroke="#380812" stroke-width="4" fill="none" opacity="0.6"/>
+  </g>
+</svg>

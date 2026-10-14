@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.14"/>
+    </filter>
+    <linearGradient id="wool-grey" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5A5A60"/>
+      <stop offset="50%" stop-color="#46464B"/>
+      <stop offset="100%" stop-color="#343438"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Oversized Dropped Shoulder Wool Silhouette -->
+    <path d="M 225 155 L 120 215 L 85 520 L 140 535 L 175 350 L 155 720 L 445 720 L 425 350 L 460 535 L 515 520 L 480 215 L 375 155 Z" fill="url(#wool-grey)"/>
+    <!-- Minimalist Notch Collar -->
+    <polygon points="225,155 195,300 270,360 300,420 300,720 302,420 330,360 405,300 375,155 300,175" fill="#3D3D42" stroke="#29292C" stroke-width="1.5"/>
+    <!-- Horn Buttons -->
+    <circle cx="300" cy="460" r="8" fill="#1C1C1E" stroke="#525258" stroke-width="1.5"/>
+    <circle cx="300" cy="540" r="8" fill="#1C1C1E" stroke="#525258" stroke-width="1.5"/>
+    <circle cx="300" cy="620" r="8" fill="#1C1C1E" stroke="#525258" stroke-width="1.5"/>
+    <!-- Deep Welt Pockets -->
+    <rect x="185" y="530" width="80" height="9" rx="2" fill="#29292C"/>
+    <rect x="335" y="530" width="80" height="9" rx="2" fill="#29292C"/>
+  </g>
+</svg>

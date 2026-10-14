@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, CheckCircle2, RefreshCw, Server, X } from 'lucide-react';
+import { RefreshCw, X, Server } from 'lucide-react';
 import { checkApiHealth } from '@/lib/api';
 import { useStore } from '@/lib/store';
 
@@ -10,33 +9,37 @@ export function ApiHealthBanner() {
   const { apiConnected, setApiConnected, setApiHealthStatus } = useStore();
   const [dismissed, setDismissed] = useState(false);
   const [retrying, setRetrying] = useState(false);
-  const [countdown, setCountdown] = useState(5);
-  const [apiUrl, setApiUrl] = useState('http://localhost:8000');
+  const [countdown, setCountdown] = useState(10);
 
   const checkHealth = useCallback(async () => {
-    setRetrying(true);
-    setApiHealthStatus('checking');
-    console.log(`[AVERO Health Check] Pinging ${apiUrl}/health...`);
-
     const result = await checkApiHealth();
     if (result.ok) {
-      console.log('[AVERO Health Check] ✅ Backend connected:', result.data);
       setApiConnected(true);
       setApiHealthStatus('connected');
     } else {
-      console.warn(`[AVERO Health Check] ⚠️ Backend offline: ${result.error}. Serving from demo catalog.`);
       setApiConnected(false);
       setApiHealthStatus('disconnected');
     }
     setRetrying(false);
-    setCountdown(5);
-  }, [apiUrl, setApiConnected, setApiHealthStatus]);
+    setCountdown(10);
+  }, [setApiConnected, setApiHealthStatus]);
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    setApiUrl(url);
-    checkHealth();
-  }, [checkHealth]);
+    let active = true;
+    checkApiHealth().then((result) => {
+      if (!active) return;
+      if (result.ok) {
+        setApiConnected(true);
+        setApiHealthStatus('connected');
+      } else {
+        setApiConnected(false);
+        setApiHealthStatus('disconnected');
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [setApiConnected, setApiHealthStatus]);
 
   // Periodic retry countdown when disconnected
   useEffect(() => {
@@ -46,7 +49,7 @@ export function ApiHealthBanner() {
       setCountdown((prev) => {
         if (prev <= 1) {
           checkHealth();
-          return 5;
+          return 10;
         }
         return prev - 1;
       });
@@ -58,50 +61,44 @@ export function ApiHealthBanner() {
   if (dismissed || apiConnected) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl px-4 py-3 bg-neutral-900/95 border border-amber-500/30 rounded-xl shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 text-xs text-neutral-200"
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 shrink-0">
-            <AlertCircle size={16} />
-          </div>
-          <div className="min-w-0">
-            <p className="font-semibold text-white truncate">
-              API server not connected. Make sure backend is running on :8000
-            </p>
-            <p className="text-[11px] text-neutral-400 flex items-center gap-1.5 truncate">
-              <Server size={11} className="text-amber-400" />
-              <span>Target: <code className="text-amber-300">{apiUrl}</code></span>
-              <span className="text-neutral-500">•</span>
-              <span>Running in offline catalog demo mode</span>
-            </p>
-          </div>
+    <aside
+      className="bg-[#F7F7F5] border-b border-[#ECECE8] text-[#171717] px-4 py-2.5 text-xs transition-all"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xs bg-[#ECECE8] text-[#555550] font-semibold text-[10px] tracking-wider uppercase">
+            <Server size={11} />
+            Demo Mode Active
+          </span>
+          <span className="text-[#555550]">
+            FastAPI backend offline on port 8000. Displaying curated H&amp;M catalog with simulated neural scores.
+          </span>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => checkHealth()}
+            onClick={() => {
+              setRetrying(true);
+              setApiHealthStatus('checking');
+              checkHealth();
+            }}
             disabled={retrying}
-            className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-medium border border-amber-500/30 transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
-            title="Retry connecting to API"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#171717] hover:underline disabled:opacity-50 cursor-pointer"
           >
-            <RefreshCw size={12} className={retrying ? 'animate-spin' : ''} />
-            <span>{retrying ? 'Checking...' : `Retry (${countdown}s)`}</span>
+            <RefreshCw size={11} className={retrying ? 'animate-spin' : ''} />
+            {retrying ? 'Checking...' : `Retry (${countdown}s)`}
           </button>
           <button
             onClick={() => setDismissed(true)}
-            className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
-            title="Dismiss notification"
-            aria-label="Dismiss API banner"
+            className="p-1 text-[#8E8E88] hover:text-[#171717] cursor-pointer"
+            aria-label="Dismiss banner"
           >
-            <X size={14} />
+            <X size={13} />
           </button>
         </div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </aside>
   );
 }

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+    <linearGradient id="oxford-white" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#FBFBF9"/>
+      <stop offset="100%" stop-color="#F2F2EC"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Shirt Body & Long Sleeves -->
+    <path d="M 235 170 L 150 220 L 115 500 L 165 510 L 195 320 L 195 620 Q 300 650 405 620 L 405 320 L 435 510 L 485 500 L 450 220 L 365 170 Z" fill="url(#oxford-white)" stroke="#E0E0D8" stroke-width="1.5"/>
+    <!-- Button-down collar -->
+    <polygon points="235,170 270,230 300,195 330,230 365,170 300,180" fill="#FFFFFF" stroke="#D5D5CC" stroke-width="1.5"/>
+    <!-- Center Placket -->
+    <rect x="290" y="195" width="20" height="435" fill="#FFFFFF" stroke="#E0E0D8" stroke-width="1"/>
+    <!-- Buttons -->
+    <circle cx="300" cy="245" r="4" fill="#FFFFFF" stroke="#B0B0A8" stroke-width="1.5"/>
+    <circle cx="300" cy="305" r="4" fill="#FFFFFF" stroke="#B0B0A8" stroke-width="1.5"/>
+    <circle cx="300" cy="365" r="4" fill="#FFFFFF" stroke="#B0B0A8" stroke-width="1.5"/>
+    <circle cx="300" cy="425" r="4" fill="#FFFFFF" stroke="#B0B0A8" stroke-width="1.5"/>
+    <circle cx="300" cy="485" r="4" fill="#FFFFFF" stroke="#B0B0A8" stroke-width="1.5"/>
+    <circle cx="300" cy="545" r="4" fill="#FFFFFF" stroke="#B0B0A8" stroke-width="1.5"/>
+    <!-- Left Chest Pocket -->
+    <polygon points="230,310 275,310 275,360 252,375 230,360" fill="none" stroke="#D5D5CC" stroke-width="1.5"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#6B5B4D" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="knit-beige" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EBE5DB"/>
+      <stop offset="50%" stop-color="#DDD5C7"/>
+      <stop offset="100%" stop-color="#CEBFAC"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Rib knit sweater body & dropped sleeves -->
+    <path d="M 240 180 C 260 190 340 190 360 180 L 450 250 L 510 470 L 460 485 L 415 330 L 410 600 C 410 610 395 620 380 620 L 220 620 C 205 620 190 610 190 600 L 185 330 L 140 485 L 90 470 L 150 250 Z" fill="url(#knit-beige)"/>
+    <!-- Chunky Crewneck Ribbed Collar -->
+    <path d="M 240 180 C 265 205 335 205 360 180 C 345 168 255 168 240 180 Z" fill="#C2B29D" stroke="#A89680" stroke-width="1.5"/>
+    <!-- Hem & Cuff Ribbing -->
+    <rect x="190" y="590" width="220" height="30" rx="3" fill="#C2B29D" opacity="0.6"/>
+    <!-- Ribbed Vertical Texture Lines -->
+    <path d="M 240 215 L 240 590 M 270 215 L 270 590 M 300 215 L 300 590 M 330 215 L 330 590 M 360 215 L 360 590" stroke="#BAAA95" stroke-width="1" opacity="0.5"/>
+  </g>
+</svg>

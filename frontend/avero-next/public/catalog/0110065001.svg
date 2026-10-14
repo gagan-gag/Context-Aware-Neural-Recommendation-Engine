@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+    <linearGradient id="jersey-white" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="80%" stop-color="#FAF9F5"/>
+      <stop offset="100%" stop-color="#EDEDE4"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- T-Shirt Body & Short Sleeves -->
+    <path d="M 230 170 L 130 220 L 105 320 L 165 340 L 190 280 L 190 620 C 190 635 205 645 225 645 L 375 645 C 395 645 410 635 410 620 L 410 280 L 435 340 L 495 320 L 470 220 L 370 170 Z" fill="url(#jersey-white)" stroke="#E0E0D8" stroke-width="1.5"/>
+    <!-- Bound Crew Neck Collar -->
+    <path d="M 230 170 C 260 205 340 205 370 170 C 345 158 255 158 230 170 Z" fill="#F4F3EE" stroke="#D5D5CC" stroke-width="2"/>
+    <!-- Subtle Seam Lines -->
+    <path d="M 190 280 L 230 170" stroke="#E5E5DE" stroke-width="1.5"/>
+    <path d="M 410 280 L 370 170" stroke="#E5E5DE" stroke-width="1.5"/>
+  </g>
+</svg>

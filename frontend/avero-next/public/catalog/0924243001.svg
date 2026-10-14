@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.10"/>
+    </filter>
+    <linearGradient id="trouser-grey" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#85858A"/>
+      <stop offset="50%" stop-color="#6E6E73"/>
+      <stop offset="100%" stop-color="#55555A"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- High-rise waistband -->
+    <rect x="225" y="160" width="150" height="30" rx="4" fill="#5E5E63" stroke="#48484C" stroke-width="1"/>
+    <!-- Wide-leg drape silhouette -->
+    <path d="M 225 190 L 170 700 L 285 700 L 300 340 L 315 700 L 430 700 L 375 190 Z" fill="url(#trouser-grey)"/>
+    <!-- Crisp Center Front Creases -->
+    <line x1="227" y1="230" x2="227" y2="700" stroke="#A2A2A8" stroke-width="2" opacity="0.6"/>
+    <line x1="373" y1="230" x2="373" y2="700" stroke="#A2A2A8" stroke-width="2" opacity="0.6"/>
+    <!-- Slash pockets -->
+    <line x1="230" y1="200" x2="255" y2="245" stroke="#48484C" stroke-width="2"/>
+    <line x1="370" y1="200" x2="345" y2="245" stroke="#48484C" stroke-width="2"/>
+  </g>
+</svg>

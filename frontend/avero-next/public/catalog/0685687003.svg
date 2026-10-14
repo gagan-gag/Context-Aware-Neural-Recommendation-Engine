@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#4A3B2C" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="scarf-camel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D6B896"/>
+      <stop offset="50%" stop-color="#C5A47E"/>
+      <stop offset="100%" stop-color="#AF8C66"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Elegant Draped Wool Scarf -->
+    <!-- Neck loop -->
+    <path d="M 230 240 C 230 200 370 200 370 240 C 370 300 230 300 230 240 Z" fill="#C5A47E" stroke="#9E7E5A" stroke-width="1.5"/>
+    <!-- Left draped tail -->
+    <path d="M 240 280 L 220 580 L 290 580 L 295 285 Z" fill="url(#scarf-camel)" stroke="#9E7E5A" stroke-width="1.5"/>
+    <!-- Right draped tail -->
+    <path d="M 305 285 L 310 520 L 375 520 L 360 280 Z" fill="url(#scarf-camel)" stroke="#9E7E5A" stroke-width="1.5"/>
+    <!-- Fringe details -->
+    <line x1="225" y1="580" x2="225" y2="610" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="240" y1="580" x2="240" y2="610" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="255" y1="580" x2="255" y2="610" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="270" y1="580" x2="270" y2="610" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="285" y1="580" x2="285" y2="610" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="315" y1="520" x2="315" y2="550" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="330" y1="520" x2="330" y2="550" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="345" y1="520" x2="345" y2="550" stroke="#8E6E4C" stroke-width="2"/>
+    <line x1="360" y1="520" x2="360" y2="550" stroke="#8E6E4C" stroke-width="2"/>
+  </g>
+</svg>

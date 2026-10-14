@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="blazer-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#242426"/>
+      <stop offset="50%" stop-color="#1A1A1C"/>
+      <stop offset="100%" stop-color="#121214"/>
+    </linearGradient>
+    <linearGradient id="blazer-lapel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2E2E32"/>
+      <stop offset="100%" stop-color="#1F1F22"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Main Jacket Body -->
+    <path d="M 230 150 L 150 200 L 120 440 L 170 450 L 190 320 L 195 620 C 195 635 210 645 230 645 L 370 645 C 390 645 405 635 405 620 L 410 320 L 430 450 L 480 440 L 450 200 L 370 150 C 340 165 260 165 230 150 Z" fill="url(#blazer-body)"/>
+    <!-- Collar and Lapels -->
+    <path d="M 240 155 L 205 320 L 265 370 L 298 420 L 300 640 L 302 420 L 335 370 L 395 320 L 360 155 C 330 170 270 170 240 155 Z" fill="url(#blazer-lapel)"/>
+    <!-- Lapel Notch Left -->
+    <polygon points="205,320 220,310 245,340 225,355" fill="#18181A"/>
+    <!-- Lapel Notch Right -->
+    <polygon points="395,320 380,310 355,340 375,355" fill="#18181A"/>
+    <!-- Center Button -->
+    <circle cx="300" cy="450" r="7" fill="#0D0D0E" stroke="#444448" stroke-width="1.5"/>
+    <circle cx="300" cy="510" r="7" fill="#0D0D0E" stroke="#444448" stroke-width="1.5"/>
+    <!-- Welt Pockets -->
+    <rect x="215" y="520" width="70" height="8" rx="2" fill="#18181A" stroke="#2D2D30" stroke-width="1"/>
+    <rect x="315" y="520" width="70" height="8" rx="2" fill="#18181A" stroke="#2D2D30" stroke-width="1"/>
+    <!-- Breast Pocket -->
+    <rect x="230" y="380" width="45" height="5" rx="1" fill="#18181A" stroke="#2D2D30" stroke-width="1"/>
+  </g>
+</svg>

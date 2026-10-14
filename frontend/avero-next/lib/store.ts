@@ -10,7 +10,7 @@ export interface Product {
   price_inr: number;
   price_inr_formatted: string;
   score: number;
-  currency: string;
+  currency?: string;
   image_url?: string;
   rating?: number;
   review_count?: number;
@@ -22,6 +22,7 @@ export interface Product {
   name?: string;
   price?: number;
   discount_percent?: number;
+  is_can_pick?: boolean;
 }
 
 export interface Filters {

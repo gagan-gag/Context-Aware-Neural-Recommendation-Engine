@@ -13,7 +13,6 @@ export interface Toast {
   duration?: number;
 }
 
-// Global toast state (singleton pattern)
 let toastListeners: ((toasts: Toast[]) => void)[] = [];
 let currentToasts: Toast[] = [];
 
@@ -21,7 +20,7 @@ function notifyListeners() {
   toastListeners.forEach((fn) => fn([...currentToasts]));
 }
 
-export function showToast(message: string, type: ToastType = 'info', duration = 4000) {
+export function showToast(message: string, type: ToastType = 'info', duration = 3500) {
   const id = `toast-${Date.now()}-${Math.random()}`;
   currentToasts = [...currentToasts, { id, message, type, duration }];
   notifyListeners();
@@ -44,10 +43,10 @@ const icons = {
 };
 
 const colors = {
-  success: { border: 'border-green-500/30', icon: 'text-green-400', bg: 'bg-green-500/10' },
-  error: { border: 'border-red-500/30', icon: 'text-red-400', bg: 'bg-red-500/10' },
-  warning: { border: 'border-amber-500/30', icon: 'text-amber-400', bg: 'bg-amber-500/10' },
-  info: { border: 'border-[#D4AF37]/30', icon: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10' },
+  success: { border: 'border-[#D1DDC9]', icon: 'text-[#4A5540]', bg: 'bg-[#EDF1E8]' },
+  error: { border: 'border-[#E8C2BC]', icon: 'text-[#8A4032]', bg: 'bg-[#FBEFEB]' },
+  warning: { border: 'border-[#ECD8A5]', icon: 'text-[#8A6A1C]', bg: 'bg-[#FEF8E7]' },
+  info: { border: 'border-[#DCDCD6]', icon: 'text-[#171717]', bg: 'bg-[#F7F7F5]' },
 };
 
 function ToastItem({ toast }: { toast: Toast }) {
@@ -57,29 +56,31 @@ function ToastItem({ toast }: { toast: Toast }) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      initial={{ opacity: 0, y: 15, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.9, filter: 'blur(4px)' }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
       className={`
-        flex items-start gap-3 px-4 py-3.5 rounded-xl
-        glass border ${color.border}
+        flex items-start gap-3 px-4 py-3 rounded-xs
+        bg-white border ${color.border}
         max-w-sm min-w-[280px] pointer-events-auto
-        shadow-2xl
+        shadow-card
       `}
       role="alert"
       aria-live="assertive"
     >
-      <div className={`rounded-full ${color.bg} p-1 flex-shrink-0 mt-0.5`}>
-        <Icon size={14} className={color.icon} />
+      <div className={`rounded-xs ${color.bg} p-1 flex-shrink-0 mt-0.5`}>
+        <Icon size={13} className={color.icon} />
       </div>
-      <p className="text-sm text-neutral-200 flex-1 leading-snug">{toast.message}</p>
+      <p className="text-xs font-medium text-[#171717] flex-1 leading-snug">
+        {toast.message}
+      </p>
       <button
         onClick={() => removeToast(toast.id)}
-        className="text-neutral-500 hover:text-white transition-colors flex-shrink-0 mt-0.5"
+        className="text-[#8E8E88] hover:text-[#171717] transition-colors flex-shrink-0 mt-0.5 cursor-pointer"
         aria-label="Dismiss notification"
       >
-        <X size={14} />
+        <X size={13} />
       </button>
     </motion.div>
   );

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#4A3B2C" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="trench-beige" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E2D4BF"/>
+      <stop offset="50%" stop-color="#D4C3A9"/>
+      <stop offset="100%" stop-color="#C2AF93"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Long Trench Coat Body -->
+    <path d="M 230 150 L 140 200 L 110 500 L 160 515 L 185 340 L 160 710 L 440 710 L 415 340 L 440 515 L 490 500 L 460 200 L 370 150 Z" fill="url(#trench-beige)"/>
+    <!-- Wide Lapels & Collar -->
+    <polygon points="230,150 185,280 260,330 300,230 340,330 415,280 370,150 300,170" fill="#CBB89D" stroke="#A89478" stroke-width="1.5"/>
+    <!-- Waist Belt with Buckle -->
+    <rect x="175" y="440" width="250" height="24" rx="4" fill="#B39E82" stroke="#8E785D" stroke-width="1.5"/>
+    <rect x="285" y="435" width="30" height="34" rx="3" fill="#D6C7AF" stroke="#685640" stroke-width="2"/>
+    <!-- Tortoiseshell Double-Breasted Buttons -->
+    <circle cx="260" cy="360" r="7" fill="#4A3425" stroke="#2B1D14" stroke-width="1.5"/>
+    <circle cx="340" cy="360" r="7" fill="#4A3425" stroke="#2B1D14" stroke-width="1.5"/>
+    <circle cx="260" cy="405" r="7" fill="#4A3425" stroke="#2B1D14" stroke-width="1.5"/>
+    <circle cx="340" cy="405" r="7" fill="#4A3425" stroke="#2B1D14" stroke-width="1.5"/>
+    <circle cx="260" cy="510" r="7" fill="#4A3425" stroke="#2B1D14" stroke-width="1.5"/>
+    <circle cx="340" cy="510" r="7" fill="#4A3425" stroke="#2B1D14" stroke-width="1.5"/>
+  </g>
+</svg>

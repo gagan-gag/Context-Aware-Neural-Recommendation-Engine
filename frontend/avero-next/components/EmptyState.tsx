@@ -1,52 +1,54 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { PackageOpen, ArrowRight, RotateCcw } from 'lucide-react';
+import { PackageOpen, RotateCcw, ArrowRight } from 'lucide-react';
 
 interface EmptyStateProps {
   onResetFilters?: () => void;
+  onReset?: () => void;
+  title?: string;
+  description?: string;
 }
 
-export function EmptyState({ onResetFilters }: EmptyStateProps) {
+export function EmptyState({
+  onResetFilters,
+  onReset,
+  title = 'No items match your selection',
+  description = 'Try adjusting your filters or browse our curated trending pieces.',
+}: EmptyStateProps) {
+  const handleReset = onResetFilters || onReset;
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      transition={{ duration: 0.4 }}
-      className="w-full flex flex-col items-center justify-center p-12 sm:p-16 rounded-2xl bg-neutral-900/40 border border-white/5 text-center my-6"
-    >
-      <div className="w-16 h-16 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/25 flex items-center justify-center mb-5 text-[#D4AF37]">
-        <PackageOpen size={32} />
+    <div className="w-full flex flex-col items-center justify-center p-12 sm:p-16 rounded-xs bg-[#F7F7F5] border border-[#ECECE8] text-center my-6">
+      <div className="w-12 h-12 rounded-full bg-white border border-[#DCDCD6] flex items-center justify-center mb-4 text-[#444441]">
+        <PackageOpen size={22} strokeWidth={1.5} />
       </div>
 
-      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-        No products found
+      <h3 className="text-lg font-medium text-[#171717] mb-2">
+        {title}
       </h3>
 
-      <p className="text-sm text-neutral-400 max-w-md mb-6 leading-relaxed">
-        Try adjusting your filters or browse trending products to discover today&apos;s most-wanted luxury fashion drops.
+      <p className="text-xs sm:text-sm text-[#737370] max-w-sm mb-6 leading-relaxed">
+        {description}
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
-        {onResetFilters && (
+        {handleReset && (
           <button
-            onClick={onResetFilters}
-            className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs border border-white/10 transition-all flex items-center gap-2 active:scale-95"
+            onClick={handleReset}
+            className="btn-secondary text-xs flex items-center gap-2 cursor-pointer"
           >
-            <RotateCcw size={13} />
-            Reset All Filters
+            <RotateCcw size={12} />
+            <span>Reset Filters</span>
           </button>
         )}
         <Link
           href="/trending"
-          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] text-black font-semibold text-xs transition-all flex items-center gap-2 hover:opacity-95 shadow-lg shadow-[#D4AF37]/20 active:scale-95"
+          className="btn-primary text-xs flex items-center gap-2"
         >
-          <span>View Trending Products</span>
-          <ArrowRight size={13} />
+          <span>View Trending</span>
+          <ArrowRight size={12} />
         </Link>
       </div>
-    </motion.div>
+    </div>
   );
 }

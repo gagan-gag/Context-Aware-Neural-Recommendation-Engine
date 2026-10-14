@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+  <rect width="600" height="800" fill="#F5F5F3"/>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#382010" flood-opacity="0.14"/>
+    </filter>
+    <linearGradient id="suede-brown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9E6843"/>
+      <stop offset="50%" stop-color="#845230"/>
+      <stop offset="100%" stop-color="#6B3F21"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- Bomber Jacket Silhouette -->
+    <path d="M 235 175 L 140 220 L 105 480 L 155 490 L 185 320 L 185 580 C 185 595 200 605 220 605 L 380 605 C 400 605 415 595 415 580 L 415 320 L 445 490 L 495 480 L 460 220 L 365 175 Z" fill="url(#suede-brown)"/>
+    <!-- Ribbed Baseball Collar -->
+    <path d="M 235 175 C 265 195 335 195 365 175 C 340 160 260 160 235 175 Z" fill="#422413" stroke="#5E371C" stroke-width="1.5"/>
+    <!-- Center Metal Zip -->
+    <line x1="300" y1="185" x2="300" y2="605" stroke="#C0B296" stroke-width="4"/>
+    <!-- Zip puller -->
+    <rect x="296" y="240" width="8" height="18" rx="2" fill="#D6CBB4" stroke="#8A7A60" stroke-width="1"/>
+    <!-- Ribbed Cuffs and Hem -->
+    <rect x="185" y="580" width="230" height="25" rx="4" fill="#422413"/>
+    <!-- Slanted welt pockets -->
+    <line x1="220" y1="460" x2="265" y2="495" stroke="#422413" stroke-width="4"/>
+    <line x1="380" y1="460" x2="335" y2="495" stroke="#422413" stroke-width="4"/>
+  </g>
+</svg>

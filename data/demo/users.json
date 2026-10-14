@@ -1,4 +1,5 @@
 [
-  {"user_id": "demo-user-001", "name": "Aarav", "preferred_category": "Dresses"},
-  {"user_id": "demo-user-002", "name": "Maya", "preferred_category": "Shirts"}
+  {"user_id": "demo-user-001", "name": "Guest Shopper", "preferred_category": "Dresses"},
+  {"user_id": "avero-guest-001", "name": "Guest Shopper", "preferred_category": "Dresses"},
+  {"user_id": "avero-guest-002", "name": "Guest Shopper", "preferred_category": "Tops"}
 ]

@@ -1,24 +1,17 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
 function SkeletonCard() {
   return (
-    <div className="flex flex-col card-gradient rounded-xl border border-white/5 overflow-hidden">
-      {/* Image skeleton */}
-      <div className="aspect-[4/3] skeleton" />
-      {/* Content skeleton */}
-      <div className="p-4 flex flex-col gap-3">
-        <div className="skeleton h-3 w-2/3 rounded" />
-        <div className="skeleton h-4 w-full rounded" />
-        <div className="skeleton h-4 w-4/5 rounded" />
-        <div className="skeleton h-3 w-1/2 rounded" />
-        <div className="mt-2 pt-3 border-t border-white/5 flex items-center justify-between">
-          <div>
-            <div className="skeleton h-5 w-20 rounded mb-1" />
-            <div className="skeleton h-3 w-16 rounded" />
-          </div>
-          <div className="skeleton h-7 w-16 rounded-full" />
+    <div className="flex flex-col bg-white border border-[#ECECE8] rounded-xs overflow-hidden">
+      {/* 3:4 Portrait Image Skeleton */}
+      <div className="aspect-[3/4] w-full skeleton-light" />
+      {/* Content Skeleton */}
+      <div className="p-4 flex flex-col gap-2.5">
+        <div className="skeleton-light h-2.5 w-1/3 rounded-xs" />
+        <div className="skeleton-light h-3.5 w-3/4 rounded-xs" />
+        <div className="pt-2 border-t border-[#F0F0EC] flex items-center justify-between">
+          <div className="skeleton-light h-3.5 w-16 rounded-xs" />
+          <div className="skeleton-light h-2.5 w-12 rounded-xs" />
         </div>
       </div>
     </div>
@@ -29,26 +22,16 @@ interface LoadingSkeletonsProps {
   count?: number;
 }
 
-export function LoadingSkeletons({ count = 12 }: LoadingSkeletonsProps) {
+export function LoadingSkeletons({ count = 8 }: LoadingSkeletonsProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="product-grid"
+    <div
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
       aria-label="Loading products"
       aria-busy="true"
     >
       {Array.from({ length: count }).map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.04, duration: 0.4 }}
-        >
-          <SkeletonCard />
-        </motion.div>
+        <SkeletonCard key={i} />
       ))}
-    </motion.div>
+    </div>
   );
 }
