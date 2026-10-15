@@ -1,245 +1,373 @@
 # AVERO — AI-Powered Fashion Discovery
 
-> **A luxury fashion discovery and ecommerce platform** powered by a **Context-Aware Neural (CAN) recommendation engine** built with **FastAPI**, **TensorFlow (Two-Tower Deep Neural Network)**, and **Next.js 16 (React 19, TailwindCSS v4)** — delivering personalized style discovery on the Kaggle H&M Personalized Fashion Recommendations dataset.
+> A luxury fashion discovery and e-commerce platform powered by a **Context-Aware Neural (CAN) Two-Tower recommendation engine** — built with **FastAPI**, **TensorFlow**, and **Next.js 16** — delivering personalized style discovery on the Kaggle H&M Personalized Fashion Recommendations dataset.
 
 ---
 
-## 1. Project Overview & Problem Statement
+## Table of Contents
 
-Fashion discovery in traditional ecommerce suffers from generic ranking, static catalogs, and poor contextual awareness. Users are presented with repetitive, unpersonalized grids that fail to capture nuances of seasonality, silhouette preferences, and complementary styling pairings.
-
-**AVERO** solves this problem by combining an **editorial Scandinavian fashion storefront** with a **Two-Tower Context-Aware Neural (CAN) recommendation system**:
-- Maps high-dimensional user interaction history, visual aesthetics, and temporal signals into a unified 32-dimensional L2-normalized embedding hypersphere.
-- Generates personalized candidate apparel items with sub-50ms inference latency.
-- Completely eliminates fictional demo personas (Aarav, Elena, Liam), offering authentic session-based personalization and interactive browsing.
-
----
-
-## 2. Key Features & Working Functionality
-
-- **Editorial Fashion Hero**: Clean composition featuring the headline *"Fashion that finds your style."*, dual CTAs linking to neural recommendations and collection browsing, and floating brand quote box.
-- **Shop by Category**: 7 interactive category cards (`Dresses`, `Tops`, `Shirts & Blouses`, `Trousers`, `Outerwear`, `Knitwear`, `Accessories`) with smooth collection filtering.
-- **Recommended for You (CAN Engine)**:
-  - Powered by live Two-Tower neural model inference or resilient demo fallback.
-  - 3:4 portrait cards with verified H&M article IDs, Indian Rupee (`₹`) pricing, and `CAN Pick` neural confidence pills.
-  - Interactive `Refresh Recommendations` button with live re-ranking.
-- **Explore the Collection**:
-  - Live style count (`X styles shown`).
-  - Search field matching garment titles, colors, and categories in real time.
-  - Multi-select category checkboxes with accurate counts.
-  - Circular color filter swatches (Black, White, Grey, Beige, Red, Pink, Blue, Green).
-  - Price range slider (`₹1,000` to `₹20,000`).
-  - Sort dropdown: `Relevance (Neural Match)`, `Price: Low to High`, `Price: High to Low`, `Newest Arrivals`.
-  - `Clear All` reset action.
-- **Quick View / Product Details Modal**:
-  - Click any card to inspect high-resolution imagery, verified 10-digit article ID, color, price in INR, neural match confidence percentage, and styling rationale.
-  - Interactive "Add to Bag" and "Add to Wishlist" controls.
-- **Wishlist & Lookbook (`/saved`)**:
-  - Global Zustand state management with browser storage persistence.
-  - Real-time Wishlist badge counter in the navigation bar.
-- **How CAN Works**:
-  - 3-stage visual architectural breakdown: *1. Understand*, *2. Match*, *3. Personalize*.
-  - Direct link to technical model analytics (`/insights`).
-- **AI Insights & Model Intelligence (`/insights`)**:
-  - **Visualization A — Interactive CAN Architecture Graph**: Large 680px canvas with 3D perspective rotation, 2D diagram toggle, draggable layer nodes, collision-free edge labels, slide-out tensor specification drawer, and live product previews for top recommendations.
-  - **Visualization B — CAN 32D Latent Embedding Space Explorer**: Substantial 3D orbit sphere with true depth occlusion, department filtering (Women, Men, Kids, Shoes, Collections), category clustering, nearest-neighbor vector connections with cosine distance metrics, and accessible coordinate table fallback.
-  - **Visualization C — Recommendation Similarity Explorer**: Live context simulation sliders (category affinity, season factor, style mood, price sweet-spot, exploration jitter), real-time cosine score re-ranking with 3:4 isolated product photography, category distribution chart, and deep candidate feature match inspector.
-  - **Visualization D — Model Evaluation & Performance Benchmark**: Dynamic comparative charts for Recall@K (1, 5, 10, 20), NDCG@K (5, 10, 20), MRR, and HitRate@10 against Matrix Factorization and Popularity baselines; offline holdout test protocol and sub-50ms live inference latency budget.
-  - **Section 5 — Product Management & Candidate Ingestion**: Department-partitioned catalog browsing (Women, Men, Kids, Shoes, Collections) with subcategory filtering, Add/Edit/Delete custom products with live 3:4 preview, duplicate article ID validation, origin badges, backend JSON persistence, and client localStorage fallback.
-  - **Live Service Diagnostic**: Port 8000 health pinging, roundtrip latency measurement, and Feature Store Redis dimensions (52D User, 44D Item, 34D Context, 32D Latent).
-- **AVERO Footer**:
-  - Original brand identity, curated navigation links, dataset attribution, and social links.
+1. [Project Overview](#1-project-overview)
+2. [Key Features](#2-key-features)
+3. [AI Insights Dashboard](#3-ai-insights-dashboard)
+4. [CAN Engine Architecture](#4-can-engine-architecture)
+5. [Technology Stack](#5-technology-stack)
+6. [Repository Structure](#6-repository-structure)
+7. [Dataset Setup](#7-dataset-setup)
+8. [Product Catalog](#8-product-catalog)
+9. [Prerequisites](#9-prerequisites)
+10. [Quick Start](#10-quick-start)
+11. [API Reference](#11-api-reference)
+12. [Testing & Build](#12-testing--build)
+13. [Troubleshooting](#13-troubleshooting)
+14. [Limitations & Roadmap](#14-limitations--roadmap)
+15. [License](#15-license)
 
 ---
 
-## 3. CAN (Context-Aware Neural) Engine Architecture
+## 1. Project Overview
+
+Fashion discovery in traditional e-commerce suffers from generic ranking, static catalogs, and poor contextual awareness. Users encounter repetitive, unpersonalized grids that fail to capture nuances of seasonality, silhouette preferences, and complementary styling pairings.
+
+**AVERO** solves this by combining an **editorial Scandinavian fashion storefront** with a production-grade **Two-Tower Context-Aware Neural recommendation system**:
+
+- Maps high-dimensional user interaction history, visual aesthetics, and temporal signals into a unified **32-dimensional L2-normalized embedding hypersphere**.
+- Generates personalized candidate apparel items with **sub-50ms inference latency**.
+- Ships an interactive **AI Insights dashboard** exposing latent space visualizations, live dataset inspection, and real-time re-ranking controls.
+- **Zero human model photography** — all 22 product packshots are flat-lay / ghost-mannequin isolated garment shots on neutral backgrounds.
+
+---
+
+## 2. Key Features
+
+### Homepage (`/`)
+- **Editorial Fashion Hero** — headline *"Fashion that finds your style."* with dual CTAs.
+- **Shop by Category** — 7 centered category cards (Dresses, Tops, Shirts & Blouses, Trousers, Outerwear, Knitwear, Accessories) with soft backgrounds and mobile swipe support.
+- **Recommended for You (CAN Engine)** — 3:4 portrait product cards with verified H&M article IDs, INR pricing, and CAN Pick neural confidence pills.
+- **Explore the Collection** — full-text search, multi-select category checkboxes, color swatches, price range slider, sort dropdown.
+
+### Product Experience
+- **Quick View Modal** — packshot, article ID, price in INR, neural match confidence, Add to Bag & Wishlist.
+- **Wishlist / Lookbook (`/saved`)** — Zustand global state with localStorage persistence and navbar badge counter.
+- **Trending (`/trending`)** — items ranked by H&M transaction frequency.
+- **Recommendations Studio (`/recommendations`)** — interactive CAN engine candidate exploration.
+
+### AI Insights (`/insights`)
+See [Section 3](#3-ai-insights-dashboard) for the full breakdown.
+
+---
+
+## 3. AI Insights Dashboard
+
+The `/insights` page is a machine-learning analytics dashboard exposing Two-Tower model internals in a production-grade UI.
+
+### Layout (12-column grid, max-width 1440px, background `#F8F7F4`)
 
 ```
-User Demographics (52D) ──┐
-                          ├──> [Query Tower: Dense 128→64→32] ──┐
-Context Signals   (34D) ──┘                                     │
-                                                                ├──> [Cosine Similarity Dot Product] ──> Top-K Ranked Styles
-Item Attributes   (44D) ──┐                                     │
-                          ├──> [Candidate Tower: Dense 128→64→32]┘
-Context Signals   (34D) ──┘
++----------------------------------------------------+---------------------------------------+
+|  LEFT COLUMN (8 cols):                             |  RIGHT COLUMN (4 cols):               |
+|                                                    |                                       |
+|  [ Card 1: H&M Two-Tower Latent Space (440px) ]    |  [ Card 2: Model Architecture &       |
+|    - 3D View / 2D PCA toggle, 7 clusters           |            Context (SVG Pipeline) ]   |
+|    - Dynamic popover with garment packshot         |  [ Card 4: Live Re-Ranking Controls ] |
+|                                                    |    - 4 weight sliders + Reset         |
+|  [ Card 3: Dataset Inspector (Table) ]             |  [ Card 5: Selected Product Card ]    |
+|    - Department filter, search, 1,024 items        |    - Packshot, metadata, 5 neighbors  |
++----------------------------------------------------+---------------------------------------+
+|  BOTTOM ROW (12 cols full-width):                                                          |
+|  [ Card 6: System Performance Suite — 6 Benchmark Charts in a Single Row ]                |
++--------------------------------------------------------------------------------------------+
 ```
 
-1. **Query Tower (86D $\to$ 32D)**:
-   - Inputs: User interaction vector (52D) + Context vector (34D: month, day-of-week, channel, season).
-   - Layers: `Dense(128, ReLU)` $\to$ `BatchNormalization` $\to$ `Dropout(0.2)` $\to$ `Dense(64, ReLU)` $\to$ `Dense(32)` $\to$ `L2-Normalization`.
-2. **Candidate Tower (78D $\to$ 32D)**:
-   - Inputs: Item attributes (44D: garment category, product group, color, price) + Context vector (34D).
-   - Layers: `Dense(128, ReLU)` $\to$ `BatchNormalization` $\to$ `Dropout(0.2)` $\to$ `Dense(64, ReLU)` $\to$ `Dense(32)` $\to$ `L2-Normalization`.
-3. **Similarity & Retrieval**:
-   $$\text{Score}(u, i) = \mathbf{q}(u, c)^\top \mathbf{v}(i, c) = \sum_{k=1}^{32} q_k \cdot v_k$$
-   Because embeddings are $L_2$-normalized, the dot product represents exact cosine similarity on the unit hypersphere $\mathcal{S}^{31}$.
-4. **Offline Evaluation Benchmarks**:
-   - **Recall@1**: 0.18
-   - **Recall@5**: 0.34
-   - **Recall@10**: 0.42
-   - **NDCG@5**: 0.41
-   - **NDCG@10**: 0.48
-   - **MRR (Mean Reciprocal Rank)**: 0.36
-   - **Inference Latency**: <50 ms per batch of 50 candidates
+### Card 1 — H&M Two-Tower Latent Space (`EmbeddingSpaceExplorer.tsx`)
+- HTML5 Canvas scatter plot: ~850 points across 7 department clusters (*Evening Wear*, *Tops*, *Dresses*, *Outerwear*, *Trousers*, *Accessories*, *Knitwear*).
+- Cartesian axes: **Dimension 1** (−40 to +40) and **Dimension 2** (−30 to +30) with grid and tick labels.
+- Top-right **Department legend** — 7 clickable filter buttons with colored dots.
+- **Cluster region badges** on canvas: Evening Wear, Dresses, Tops, Trousers, Outerwear, Knitwear, Accessories.
+- **Dynamic popover** anchored to selected point's exact `(sx, sy)` canvas coordinates — tracks 3D projection, orbital rotation, pan and zoom; displays garment thumbnail, product name, department, 3D vector, and nearest-neighbor count.
+- Mode toggle: `3D View` (orbital drag) / `2D PCA` (pan). Fullscreen/reset zoom button.
+
+### Card 2 — Model Architecture & Context (`ModelArchitectureCard.tsx`)
+- High-fidelity SVG pipeline architecture diagram (540×230 viewBox).
+- 3 input feature boxes with circular icon bubbles: *User Demographics* `👤`, *User Behavior* `🛍`, *Context Features* `⏱`.
+- Color-coded connection arrows: curved blue lines to Query Tower, purple lines to Candidate Tower.
+- Two Towers: *Query Tower* (blue `#EFF6FF`) and *Candidate Tower* (purple `#FAF5FF`) with `(Dense 128 → 64 → 32)` specifications.
+- *Cosine Similarity* junction pill (`#FFFFFF`, border `#CBD5E1`) feeding into *Top-K Recommendations* box.
+- Top-K Recommendations container showcasing 3 isolated garment packshots (Satin Midi Dress, Trench Coat, White Sneakers) and *"Ranked & Re-ranked Personalized Results"* status.
+
+### Card 3 — Dataset Inspector (`DatasetInspectorCard.tsx`)
+- Department dropdown filter + keyword search bar + `Total: 1,024 items` counter.
+- Scrollable interactive data table: `#`, `Article ID`, `Product Name`, `Department`, `Category`, `Price (INR)`, `Vector (X, Y, Z)`, `Action`.
+- Reference items:
+
+| # | Article ID | Product Name | Department | Category | Price | Vector (X, Y, Z) | Action |
+|---|---|---|---|---|---|---|---|
+| 1 | 070747001 | Chiffon Maxi Dress | Dresses | Evening Wear | ₹2,499 | (-12.3, 8.4, 1.2) | View |
+| 2 | 070844001 | Satin Midi Dress | Dresses | Evening Wear | ₹2,999 | (-10.1, 6.8, 0.5) | View (Active) |
+| 3 | 093447001 | Rib-Knit Jumper | Tops | Knitwear | ₹2,299 | (14.2, -9.1, 3.7) | View |
+| 4 | 093456002 | Wide-Leg Trousers | Trousers | Casual | ₹2,799 | (-22.5, -18.3, 2.1) | View |
+| 5 | 094221001 | Tailored Blazer | Outerwear | Formal | ₹4,999 | (19.3, 5.6, -1.4) | View |
+
+- Interactive row selection synchronizes state across the latent space, popover, and selected product card.
+
+### Card 4 — Live Re-Ranking Controls (`LiveReRankingControls.tsx`)
+- 4 real-time context-weight sliders with dynamic blue fill gradient tracks:
+  - `Seasonality: Summer Evening` (default: 78%)
+  - `Price: Premium` (default: 65%)
+  - `Occasion: Formality` (default: 82%)
+  - `Style Similarity` (default: 60%)
+- `Reset` button to immediately restore default neural ranking weights.
+
+### Card 5 — Selected Product Card (`SelectedProductCard.tsx`)
+- Large isolated garment packshot container on the left (`w-36 h-52`, transparent neutral background, drop shadow).
+- Product details on right: Title, Category pill (`[Dresses]`), and 2×2 metadata grid (`Article ID`, `Category`, `Price`, `Vector`).
+- `Nearest Neighbors` row: 5 clickable garment thumbnails (`0751471001`, `0583845001`, `0865857002`, `0730713001`, `0110065001`) with active selection rings.
+
+### Card 6 — System Performance Suite (`SystemPerformanceCard.tsx`)
+- 6 compact benchmark charts arranged in a single horizontal row on desktop (`lg:grid-cols-6`):
+  1. `Recall@K` — Model (blue `#2563EB`) vs Baseline (grey `#94A3B8`) at K=5, 10, 20, 50
+  2. `NDCG@K` — Normalized Discounted Cumulative Gain
+  3. `MRR@K` — Mean Reciprocal Rank
+  4. `Hit Rate@K` — Binary Hit Rate
+  5. `Retrieval Latency (ms)` — Grouped comparison bars for Exact (80ms vs 110ms), HNSW (25ms vs 100ms), and FAISS (28ms vs 105ms)
+  6. `ANN Recall vs Speed` — Accuracy retention across index throughput at K=1, 5, 10, 50
 
 ---
 
-## 4. Technology Stack
+## 4. CAN Engine Architecture
 
-- **Frontend**: Next.js 16.4 (App Router with Turbopack), React 19, TailwindCSS v4, TypeScript 5, Zustand 5, Framer Motion, Lucide Icons.
-- **Backend API**: FastAPI 0.115+, Uvicorn, Pydantic v2, Python 3.11–3.14.
-- **Machine Learning**: TensorFlow 2.16+, PySpark 3.5, NumPy, Pandas, Scikit-Learn.
-- **Caching & Caching Layer**: Redis 7, In-Memory LRU Cache, MD5 query memoization.
-- **Containerization**: Docker, Docker Compose, Kubernetes manifests.
+```
+User Demographics (52D) --+
+                          +--> [Query Tower: Dense 128->64->32] --+
+Context Signals   (34D) --+                                      |
+                                                                 +--> [Cosine Similarity] --> Top-K Styles
+Item Attributes   (44D) --+                                      |
+                          +--> [Candidate Tower: Dense 128->64->32]+
+Context Signals   (34D) --+
+```
+
+| Component | Details |
+|---|---|
+| **Query Tower** | 52D user + 34D context -> Dense(128,ReLU) -> BatchNorm -> Dropout(0.2) -> Dense(64,ReLU) -> Dense(32) -> L2-Normalize |
+| **Candidate Tower** | 44D item + 34D context -> identical architecture -> 32D embedding |
+| **Similarity** | Cosine dot product on L2-normalized unit hypersphere |
+| **Retrieval** | Exact Top-K ranking (FAISS/HNSW for production scale) |
+
+### Offline Evaluation Benchmarks
+
+| Metric | Score |
+|---|---|
+| Recall@1 | 0.18 |
+| Recall@5 | 0.34 |
+| Recall@10 | 0.42 |
+| NDCG@5 | 0.41 |
+| NDCG@10 | 0.48 |
+| MRR | 0.36 |
+| Inference Latency | < 50 ms / batch of 50 |
 
 ---
 
-## 5. Repository Directory Structure
+## 5. Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| **Frontend** | Next.js 16.4 (App Router + Turbopack), React 19, TailwindCSS v4, TypeScript 5, Zustand 5, Lucide Icons |
+| **Backend API** | FastAPI 0.115+, Uvicorn, Pydantic v2, Python 3.11-3.14 |
+| **Machine Learning** | TensorFlow 2.16+, PySpark 3.5, NumPy, Pandas, Scikit-Learn |
+| **Caching** | Redis 7, In-Memory LRU Cache, MD5 query memoization |
+| **Visualization** | HTML5 Canvas (2D/3D latent space), inline SVG (architecture DAG, performance charts) |
+| **Containerization** | Docker, Docker Compose, Kubernetes manifests |
+
+---
+
+## 6. Repository Structure
 
 ```
 Context-Aware Neural Recommendation Engine/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI app configuration, CORS, and route registration
-│   │   ├── api/routes.py        # /health, /api/health, /api/recommendations, /api/trending
-│   │   ├── core/config.py       # Pydantic Settings & environment variable configuration
-│   │   ├── schemas/             # Typed Pydantic request & response schemas
-│   │   └── services/            # Recommendation inference and catalog services
-│   └── tests/
-│       └── test_api.py          # PyTest test suite (100% pass)
-├── frontend/
-│   └── avero-next/              # Next.js 16 Luxury Fashion Storefront
-│       ├── app/
-│       │   ├── page.tsx         # Complete Storefront: Hero, Categories, CAN Picks, Collection
-│       │   ├── insights/        # Technical ML Analytics & Two-Tower Architecture
-│       │   ├── recommendations/ # Interactive Recommendation Studio
-│       │   ├── trending/        # Trending collections page
-│       │   ├── saved/           # Wishlist lookbook page
-│       │   ├── layout.tsx       # Root layout with Playfair Display & Inter fonts
-│       │   └── globals.css      # CSS variables, 3:4 aspect ratio rules, custom slider
-│       ├── components/          # Navbar, Footer, ProductCard, FilterSidebar, ProductDetailsModal
-│       └── lib/                 # API client, Zustand store, mock H&M catalog
-├── ml/
-│   ├── models/                  # Two-Tower Model definitions (query & candidate towers)
-│   ├── evaluation/              # Offline evaluation metrics: Recall@K, NDCG@K, MRR
-│   ├── features/                # Feature extractors and embedding transforms
-│   ├── serving/                 # Model server, batch processors, and Redis feature store
-│   └── data/                    # Dataset loaders and PySpark transaction pipelines
-├── data/
-│   └── demo/
-│       ├── products.json        # 20 verified H&M products with real article IDs & prices
-│       └── users.json           # Guest shopper configurations
-├── deployment/
-│   ├── docker/Dockerfile        # Production backend container image
-│   └── k8s/                     # Kubernetes manifests
-├── .env.example                 # Environment variables template
-├── .gitignore                   # Exclusions for build outputs, cache, and raw data
-├── docker-compose.yml           # Multi-container local orchestration
-├── requirements.txt             # Lightweight API runtime dependencies
-├── requirements-ml.txt          # TensorFlow ML training stack
-└── README.md                    # Single master project documentation
++-- backend/
+|   +-- app/
+|   |   +-- main.py                  # FastAPI app, CORS, route registration
+|   |   +-- api/routes.py            # /health, /recommendations, /trending, /products
+|   |   +-- core/config.py           # Pydantic Settings & env vars
+|   |   +-- schemas/                 # Typed request/response schemas
+|   |   +-- services/                # Inference & catalog services
+|   +-- tests/
+|       +-- test_api.py              # PyTest suite (100% pass)
++-- frontend/
+|   +-- avero-next/
+|       +-- app/
+|       |   +-- page.tsx             # Homepage: Hero, Categories, CAN Picks, Collection
+|       |   +-- insights/page.tsx    # AI Insights Dashboard (3-row layout)
+|       |   +-- recommendations/     # Recommendation Studio
+|       |   +-- trending/            # Trending collection
+|       |   +-- saved/               # Wishlist lookbook
+|       |   +-- layout.tsx           # Root layout (Playfair Display + Inter)
+|       |   +-- globals.css          # CSS tokens, 3:4 aspect ratio, sliders
+|       +-- components/
+|       |   +-- insights/
+|       |   |   +-- EmbeddingSpaceExplorer.tsx   # Latent space canvas + popover
+|       |   |   +-- ModelArchitectureCard.tsx    # Two-Tower SVG diagram
+|       |   |   +-- DatasetInspectorCard.tsx     # Searchable product table
+|       |   |   +-- LiveReRankingControls.tsx    # 4-slider re-ranking panel
+|       |   |   +-- SelectedProductCard.tsx      # Product metadata + neighbors
+|       |   |   +-- SystemPerformanceCard.tsx    # 6 performance charts
+|       |   +-- ShopByCategory.tsx               # Centered 7-card category strip
+|       |   +-- Navbar.tsx                       # Navigation + wishlist badge
+|       |   +-- ProductCard.tsx                  # 3:4 garment card
+|       |   +-- ProductDetailsModal.tsx          # Quick view modal
+|       +-- lib/
+|       |   +-- mockProducts.ts      # 22 verified H&M products (garment packshots)
+|       |   +-- mockData.ts          # Full HM_PRODUCTS catalog
+|       |   +-- recommendationEngine.ts  # Client-side CAN fallback
+|       |   +-- apiClient.ts         # FastAPI client with offline fallback
+|       |   +-- store.ts             # Zustand wishlist state
+|       +-- public/catalog/          # 22 flat-lay product packshots (.jpg)
++-- ml/
+|   +-- models/                      # Two-Tower model definitions (TF)
+|   +-- evaluation/                  # Recall@K, NDCG@K, MRR metrics
+|   +-- features/                    # Feature extractors & embedding transforms
+|   +-- serving/                     # Model server, batch processors, Redis store
+|   +-- data/                        # Dataset loaders & PySpark ETL pipelines
++-- data/
+|   +-- demo/
+|       +-- products.json            # 22 verified H&M products
+|       +-- users.json               # Guest shopper sessions
++-- deployment/
+|   +-- docker/Dockerfile            # Production backend image
+|   +-- k8s/                         # Kubernetes manifests
++-- .env.example
++-- docker-compose.yml
++-- requirements.txt
++-- requirements-ml.txt
++-- README.md
 ```
 
 ---
 
-## 6. Dataset Source & Setup Requirements
+## 7. Dataset Setup
 
-This project utilizes the **H&M Personalized Fashion Recommendations** dataset from Kaggle:
-- **`articles.csv`**: Contains product metadata including article ID, product name, garment group, color, and description.
-- **`customers.csv`**: Contains user demographics, age, and fashion club member status.
-- **`transactions_train.csv`**: Purchase transaction logs with dates, prices, and sales channels.
+Uses the **H&M Personalized Fashion Recommendations** dataset from Kaggle.
 
-### Expected Directory Layout for Full ML Pipeline:
+| File | Contents |
+|---|---|
+| `articles.csv` | Product metadata: article ID, name, garment group, color |
+| `customers.csv` | User demographics, age, fashion club membership |
+| `transactions_train.csv` | Purchase logs with dates, prices, sales channels |
+
 ```
 data/
-├── hm-kaggle/
-│   ├── articles.csv
-│   ├── customers.csv
-│   └── transactions_train.csv
-└── demo/
-    ├── products.json            # Curated catalog (included in repo)
-    └── users.json               # Guest shopper sessions (included in repo)
++-- hm-kaggle/
+|   +-- articles.csv
+|   +-- customers.csv
+|   +-- transactions_train.csv
++-- demo/
+    +-- products.json      # Included in repo
+    +-- users.json         # Included in repo
 ```
 
----
-
-## 7. Product Image Mapping & Catalog Preparation
-
-Every product card in AVERO corresponds to an authentic 10-digit H&M article ID:
-- Verified 10-digit IDs (e.g. `0751471001`, `0583845001`, `0924243001`, `0730713001`, `0685687002`, `0834478002`, `0865857002`, `0685687001`).
-- Mapped with exact garment names, colors, and prices in Indian Rupees (`₹`).
-- Image containers strictly enforce a **3:4 portrait aspect ratio** (`aspect-ratio: 3 / 4; object-fit: cover;`), completely eliminating blowout, stretched hems, or unaligned grids.
-- Neutral, elegant fallbacks prevent broken-image icons if external assets fail to load.
+> The frontend runs without the Kaggle dataset. The curated `demo/` catalog and all 22 product packshots are bundled in the repository.
 
 ---
 
-## 8. Prerequisites & Environment Setup
+## 8. Product Catalog
 
-- **Node.js**: v20.x or v22.x (`node -v`)
-- **Python**: 3.11, 3.12, 3.13, or 3.14 (`python --version`)
-- **Package Managers**: `npm` (v10+) and `pip`
-- **Optional**: Docker & Docker Compose for containerized execution.
+22 verified H&M article IDs with isolated garment packshots (no human models, no faces).
+
+| Article ID | Product Name | Category | Price |
+|---|---|---|---|
+| 0751471001 | Chiffon Maxi Dress | Dresses | Rs.3,999 |
+| 0865857002 | Satin Midi Dress | Dresses | Rs.4,499 |
+| 0583845001 | Rib-Knit Jumper | Knitwear | Rs.2,299 |
+| 0924243001 | Wide-Leg Trousers | Trousers | Rs.2,799 |
+| 0730713001 | Black Tailored Blazer | Outerwear | Rs.4,999 |
+| 0614768001 | Floral Print Blouse | Shirts & Blouses | Rs.2,199 |
+| 0685687001 | Classic Crewneck Jersey Top | Tops | Rs.1,499 |
+| 0834478001 | Straight-Leg Denim Jeans | Trousers | Rs.3,499 |
+| 0918522002 | Oversized Trench Coat | Outerwear | Rs.7,999 |
+| 0110065001 | Silk Camisole Top | Tops | Rs.1,999 |
+| 0800487001 | Pleated Midi Skirt | Dresses | Rs.2,799 |
+| 0741547001 | Chunky Cable Knit Sweater | Knitwear | Rs.3,199 |
+| 0761234001 | Leather Belt Bag | Accessories | Rs.2,499 |
+| 0761234002 | Minimalist Canvas Tote | Accessories | Rs.1,299 |
+| 0761234003 | Silver Hoop Earrings | Accessories | Rs.999 |
+| 0834478002 | White Canvas Sneakers | Footwear | Rs.2,999 |
+| 0834478003 | Block-Heel Ankle Boots | Footwear | Rs.4,499 |
+| 0834478004 | Slip-On Loafers | Footwear | Rs.3,299 |
+| 0852521001 | Double-Breasted Coat | Outerwear | Rs.8,999 |
+| 0918522003 | Padded Puffer Jacket | Outerwear | Rs.5,499 |
+| 0685687002 | Linen Wrap Skirt | Dresses | Rs.2,099 |
+| 0685687003 | Organic Cotton Romper | Tops | Rs.1,799 |
 
 ---
 
-## 9. Quick Start Guide
+## 9. Prerequisites
 
-### Step 1: Clone & Configure Environment
+| Requirement | Version | Note |
+|---|---|---|
+| Node.js | v20.x or v22.x | Required for Next.js 16 |
+| Python | 3.11 or 3.12 | **Recommended: Python 3.12** *(Python 3.14 lacks compiled binary wheels for `pydantic-core`)* |
+| npm | v10+ | Bundled with Node.js |
+| Docker & Docker Compose | Optional | For containerized deployment |
 
+---
+
+## 10. Quick Start
+
+### Step 1 — Clone & configure
 ```bash
-git clone https://github.com/your-username/Context-Aware-Neural-Recommendation-Engine.git
+git clone https://github.com/gagan-gag/Context-Aware-Neural-Recommendation-Engine.git
 cd "Context-Aware-Neural-Recommendation-Engine"
-
-# Copy environment variables template
 cp .env.example .env
 ```
 
-### Step 2: Launch Next.js Frontend
-
+### Step 2 — Start the Next.js frontend
 ```powershell
 cd "frontend\avero-next"
 npm install
 npm run dev
 ```
 
-Visit **http://localhost:3000** in your browser:
-- **Storefront**: [http://localhost:3000](http://localhost:3000)
-- **Recommendation Studio**: [http://localhost:3000/recommendations](http://localhost:3000/recommendations)
-- **Model Insights (ML Analytics)**: [http://localhost:3000/insights](http://localhost:3000/insights)
-- **Trending Collection**: [http://localhost:3000/trending](http://localhost:3000/trending)
-- **Saved Wishlist Lookbook**: [http://localhost:3000/saved](http://localhost:3000/saved)
+| Page | URL |
+|---|---|
+| Storefront | http://localhost:3000 |
+| AI Insights | http://localhost:3000/insights |
+| Recommendations | http://localhost:3000/recommendations |
+| Trending | http://localhost:3000/trending |
+| Wishlist | http://localhost:3000/saved |
 
-> **Resilient Offline Architecture**: The frontend runs out-of-the-box with the curated H&M catalog. Once the FastAPI backend starts, it automatically switches to live neural model inference.
+> Resilient offline architecture — frontend runs fully with bundled catalog. Upgrades to live neural inference automatically when the backend starts.
 
-### Step 3: Launch FastAPI Recommendation Backend
-
-From the repository root in a separate terminal:
-
+### Step 3 — Start the FastAPI backend (separate terminal)
 ```powershell
-# 1. Install lightweight runtime dependencies
-pip install -r requirements.txt
+# Create & activate a Python 3.12 virtual environment (.venv312)
+py -3.12 -m venv .venv312
+.\.venv312\Scripts\Activate.ps1
 
-# 2. Start Uvicorn server
+# Install dependencies and launch Uvicorn
+pip install -r requirements.txt
 python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-- **Interactive Swagger Docs**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **System Health**: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
+| Resource | URL |
+|---|---|
+| Swagger UI | http://127.0.0.1:8000/docs |
+| Health Check | http://127.0.0.1:8000/api/health |
+
+### Step 4 — (Optional) Train the ML model
+```powershell
+pip install -r requirements-ml.txt
+python ml/models/train.py
+```
 
 ---
 
-## 10. API Endpoints & Request/Response Examples
+## 11. API Reference
 
-### Health Check: `GET /api/health`
+### GET /api/health
 ```json
-{
-  "status": "ok",
-  "mode": "demo",
-  "service": "AVERO"
-}
+{ "status": "ok", "mode": "demo", "service": "AVERO" }
 ```
 
-### Recommendations: `GET /api/recommendations?user_id=avero-guest-001&top_k=2`
+### GET /api/recommendations?user_id=avero-guest-001&top_k=16
 ```json
 {
   "user_id": "avero-guest-001",
@@ -249,15 +377,9 @@ python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
       "article_id": "0865857002",
       "name": "Satin Midi Dress",
       "category": "Dresses",
-      "color": "Red",
-      "price": 53.99,
-      "price_usd": 53.99,
-      "price_inr": 4499.0,
-      "price_inr_formatted": "₹4,499",
-      "image_url": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&auto=format&fit=crop&q=80",
-      "product_id": "0865857002",
-      "product_name": "Satin Midi Dress",
-      "rating": 4.8,
+      "color": "Burgundy",
+      "price_inr": 4499,
+      "price_inr_formatted": "Rs.4,499",
       "score": 0.95,
       "reason": "Matches your interest in dresses"
     }
@@ -265,89 +387,102 @@ python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 }
 ```
 
-### Trending Feed: `GET /api/trending?k=12`
+### GET /api/trending?k=12
 Returns top items ranked by transaction frequency.
 
-### Catalog Categories: `GET /api/categories`
+### GET /api/categories
 ```json
-[
-  "Accessories",
-  "Dresses",
-  "Footwear",
-  "Knitwear",
-  "Outerwear",
-  "Shirts & Blouses",
-  "Tops",
-  "Trousers"
-]
+["Accessories", "Dresses", "Footwear", "Knitwear", "Outerwear", "Shirts & Blouses", "Tops", "Trousers"]
 ```
 
-### Full Catalog Listing: `GET /api/products`
-Retrieves all candidate products (merging Kaggle baseline catalog with custom ingested items).
+### GET /api/products
+Returns all candidate products (Kaggle baseline + custom ingested items).
 
-### Custom Product Ingestion: `POST /api/products`
+### POST /api/products — Custom product ingestion
 ```json
 {
   "article_id": "0999123001",
   "product_name": "Linen Blend Safari Shirt",
   "category": "Tops",
   "price_inr": 2999,
-  "image_url": "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600",
-  "description": "Breathable summer weave with relaxed silhouette",
+  "image_url": "https://...",
   "color": "Olive Green"
 }
 ```
 
-### Custom Product Mutation & Deletion:
-- Update custom product: `PUT /api/products/{article_id}`
-- Delete custom product: `DELETE /api/products/{article_id}` (Kaggle ground-truth items are protected from deletion).
-
+### PUT /api/products/{article_id} and DELETE /api/products/{article_id}
+Update or delete a custom product. Kaggle ground-truth items are protected from deletion.
 
 ---
 
-## 11. Testing & Build Verification
+## 12. Testing & Build
 
 ```powershell
-# 1. Run Backend PyTest Test Suite (100% Pass)
+# Backend PyTest suite (100% pass)
 python -m pytest backend/tests/test_api.py -v
 
-# 2. Run Frontend Production Build & TypeScript Verification
+# Frontend TypeScript typecheck
 cd "frontend\avero-next"
+npx tsc --noEmit
+
+# Production build
 npm run build
 
-# 3. Frontend ESLint Check
+# ESLint
 npm run lint
+```
+
+Expected build output:
+```
+Compiled successfully in ~560ms
+TypeScript: 0 errors
+Route (app)
+  / (static)
+  /insights (static)
+  /recommendations (static)
+  /trending (static)
+  /saved (static)
 ```
 
 ---
 
-## 12. Troubleshooting Common Issues
+## 13. Troubleshooting
 
 | Issue | Cause | Resolution |
 |---|---|---|
-| `Port 3000 in use` | Another dev server instance is active | Run `Get-NetTCPConnection -LocalPort 3000` and stop the existing process before starting `npm run dev`. |
-| `Cannot connect to port 8000` | Backend server not running | Ensure `python -m uvicorn backend.app.main:app --port 8000` is launched. The frontend will automatically operate in offline demo mode until connected. |
-| `Images fail to load` | Network restrictions or slow connection | The application includes automatic neutral fallback containers so cards never collapse or display broken image icons. |
-| `Peer dependency conflict with eslint@9` | Next.js 16 uses ESLint 9 | Package overrides for `braces` and `micromatch` are configured in `frontend/avero-next/package.json`. Avoid using `npm audit fix --force`. |
+| **Port 3000 in use** | Stale Node / Next.js process | **Windows:** `Stop-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess -Force`<br>**Linux/Mac:** `kill -9 $(lsof -t -i:3000)` |
+| **Port 8000 in use** | Stale Uvicorn / Python process | **Windows:** `Stop-Process -Id (Get-NetTCPConnection -LocalPort 8000).OwningProcess -Force`<br>**Linux/Mac:** `kill -9 $(lsof -t -i:8000)` |
+| **Changes not reflecting in browser** | Browser caching older JS bundle | Perform a hard refresh: **`Ctrl + F5`** (Windows) or **`Cmd + Shift + R`** (Mac). |
+| **Cannot connect to port 8000** | Backend not started | Start Uvicorn backend. The Next.js frontend has resilient offline fallback. |
+| **Images fail to load** | Missing catalog files | Packshots reside in `public/catalog/`. All 22 `.jpg` files are bundled. |
+| **ESLint peer dependency conflict** | Next.js 16 uses ESLint 9 | Package overrides configured in `package.json`. Avoid running `npm audit fix --force`. |
+| **TypeScript check** | Type mismatch | Run `npx tsc --noEmit` to verify type safety. |
 
 ---
 
-## 13. Privacy, Data Handling & Dataset Attribution
+## 14. Limitations & Roadmap
 
-- This project is an academic research and technical portfolio demonstration developed using the public **Kaggle H&M Personalized Fashion Recommendations dataset**.
-- All customer identifiers in the training set are pre-anonymized 64-character hash strings. No personally identifiable information (PII) is processed or stored.
-- Product descriptions and historical transaction records originate from the dataset and do not reflect current commercial inventory or retail availability.
+### Current Implementation
+- Two-Tower Neural Network (ml/models/two_tower.py) with TensorFlow
+- PySpark transaction ETL pipeline
+- FastAPI demo catalog service with < 50ms inference
+- Interactive AI Insights dashboard with 6 visualization cards
+- 22-product garment-packshot catalog (zero human models)
+- Session-based personalization with Zustand + localStorage
 
----
-
-## 14. Honest Limitations & Future Roadmap
-
-- **Current Implementation**: Real Two-Tower Neural Network definitions (`ml/models/two_tower.py`), PySpark transaction ETL, and FastAPI demo catalog service with sub-50ms inference.
-- **Approximate Nearest Neighbors (ANN)**: Real-time inference currently uses exact cosine dot product ranking. Future work includes integrating ScaNN or FAISS for million-item index vector search.
-- **Checkout & Cart**: Wishlist state is stored client-side via Zustand and localStorage. A production payment gateway (e.g. Stripe/Razorpay) is planned for future phases.
+### Planned Improvements
+- ANN at Scale — integrate FAISS or ScaNN for million-item vector index
+- Checkout & Cart — production payment gateway (Stripe / Razorpay)
+- Real-Time Feature Store — Redis-backed user session vectors
+- A/B Testing Layer — multi-variant recommendation strategy evaluation
+- Image Embeddings — CLIP visual tower for multimodal similarity scoring
 
 ---
 
 ## 15. License
 
 Distributed under the [MIT License](LICENSE).
+
+---
+
+*AVERO is an academic research and technical portfolio project using the public Kaggle H&M Personalized Fashion Recommendations dataset. All customer identifiers are pre-anonymized 64-character hash strings. No PII is processed or stored.*

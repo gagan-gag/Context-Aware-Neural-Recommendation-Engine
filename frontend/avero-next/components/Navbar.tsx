@@ -8,8 +8,6 @@ import { useStore } from '@/lib/store';
 
 const NAV_LINKS = [
   { href: '/', label: 'Discover' },
-  { href: '/recommendations?category=dresses', label: 'Women' },
-  { href: '/recommendations?category=shirts', label: 'Men' },
   { href: '/#categories-section', label: 'Categories' },
   { href: '/#recommended-section', label: 'For You' },
   { href: '/insights', label: 'AI Insights' },

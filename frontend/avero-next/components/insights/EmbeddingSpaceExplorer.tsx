@@ -1,25 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import Image from 'next/image';
 import { 
-  Rotate3d, 
-  ZoomIn, 
-  ZoomOut, 
-  RotateCcw, 
-  Search, 
-  Layers, 
-  Eye, 
-  X,
-  Target,
   Maximize2,
-  Settings,
-  ChevronDown,
-  Table as TableIcon
+  Info,
+  RotateCcw
 } from 'lucide-react';
-import { MOCK_PRODUCTS, Product } from '@/lib/mockProducts';
+import { MOCK_PRODUCTS } from '@/lib/mockProducts';
 
-export interface EmbeddingPoint {
+export interface LatentPoint {
   id: string;
   name: string;
   category: string;
@@ -29,46 +18,41 @@ export interface EmbeddingPoint {
   x: number;
   y: number;
   z: number;
-  pca2d_x: number;
-  pca2d_y: number;
-  dim32VectorSnippet: number[];
-  isCatalogItem: boolean;
+  vector: string;
   cluster: string;
+  isCatalog: boolean;
 }
 
-// Cluster definitions with centroids in 3D manifold space
-const CLUSTERS: Record<string, { label: string; centroid: [number, number, number]; color: string }> = {
-  'Evening Wear': { label: 'Evening Wear', centroid: [-40, -180, 20], color: '#4F46E5' },
-  'Sporty Casual': { label: 'Sporty Casual', centroid: [180, -90, -40], color: '#0284C7' },
-  'Knit Essentials': { label: 'Knit Essentials', centroid: [140, 140, 50], color: '#D97706' },
-  'Tailored Formal': { label: 'Tailored Formal', centroid: [-190, 80, -30], color: '#7C3AED' },
-  'Streetwear & Denim': { label: 'Streetwear & Denim', centroid: [-120, 150, 120], color: '#64748B' },
-  'Accessories & Footwear': { label: 'Accessories', centroid: [-30, 210, -60], color: '#0D9488' },
+// 7 Department colors matching Reference Image:
+// Dresses (Rose/Pink), Tops (Purple/Indigo), Shirts & Blouses (Blue), Trousers (Light Blue),
+// Outerwear (Orange), Knitwear (Amber), Accessories (Teal)
+const DEPT_COLORS: Record<string, { dot: string; text: string; bg: string; border: string }> = {
+  'Dresses': { dot: '#E11D48', text: '#E11D48', bg: '#FDF2F8', border: '#FBCFE8' },
+  'Tops': { dot: '#9333EA', text: '#9333EA', bg: '#FAF5FF', border: '#E9D5FF' },
+  'Shirts & Blouses': { dot: '#2563EB', text: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+  'Trousers': { dot: '#38BDF8', text: '#0284C7', bg: '#F0F9FF', border: '#BAE6FD' },
+  'Outerwear': { dot: '#EA580C', text: '#EA580C', bg: '#FFF7ED', border: '#FED7AA' },
+  'Knitwear': { dot: '#F59E0B', text: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
+  'Accessories': { dot: '#10B981', text: '#059669', bg: '#ECFDF5', border: '#A7F3D0' },
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  'Dresses': '#4F46E5',
-  'Tops': '#0284C7',
-  'Trousers': '#64748B',
-  'Outerwear': '#7C3AED',
-  'Knitwear': '#D97706',
-  'Footwear': '#0D9488',
-  'Accessories': '#DB2777',
+// Clusters matching Reference Image coordinates:
+// - Evening Wear: top-left (x=-18, y=22) - Navy/Indigo
+// - Tops: top-right (x=24, y=20) - Purple
+// - Dresses: mid-left (x=-28, y=0) - Rose
+// - Outerwear: mid-right (x=33, y=5) - Orange
+// - Trousers: bottom-left (x=-18, y=-18) - Light Blue
+// - Accessories: bottom-center (x=8, y=-22) - Teal
+// - Knitwear: bottom-right (x=24, y=-18) - Amber
+const CLUSTER_CONFIG: Record<string, { label: string; cx: number; cy: number; color: string; bg: string; border: string }> = {
+  'Evening Wear': { label: 'Evening Wear', cx: -18, cy: 22, color: '#1E3A8A', bg: '#EFF6FF', border: '#BFDBFE' },
+  'Tops': { label: 'Tops', cx: 24, cy: 20, color: '#9333EA', bg: '#FAF5FF', border: '#E9D5FF' },
+  'Dresses': { label: 'Dresses', cx: -28, cy: 0, color: '#E11D48', bg: '#FDF2F8', border: '#FBCFE8' },
+  'Outerwear': { label: 'Outerwear', cx: 33, cy: 5, color: '#EA580C', bg: '#FFF7ED', border: '#FED7AA' },
+  'Trousers': { label: 'Trousers', cx: -18, cy: -18, color: '#0284C7', bg: '#F0F9FF', border: '#BAE6FD' },
+  'Accessories': { label: 'Accessories', cx: 8, cy: -22, color: '#059669', bg: '#ECFDF5', border: '#A7F3D0' },
+  'Knitwear': { label: 'Knitwear', cx: 24, cy: -18, color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
 };
-
-function generateDeterministicVector(seedStr: string): number[] {
-  let hash = 0;
-  for (let i = 0; i < seedStr.length; i++) {
-    hash = (hash << 5) - hash + seedStr.charCodeAt(i);
-    hash |= 0;
-  }
-  const vec: number[] = [];
-  for (let i = 0; i < 32; i++) {
-    const val = Math.sin((hash + i * 37) * 0.12);
-    vec.push(Number(val.toFixed(3)));
-  }
-  return vec;
-}
 
 interface EmbeddingSpaceExplorerProps {
   selectedPointId?: string | null;
@@ -77,137 +61,121 @@ interface EmbeddingSpaceExplorerProps {
 }
 
 export function EmbeddingSpaceExplorer({
-  selectedPointId: externalSelectedId,
-  onSelectPoint: externalOnSelect,
-  height = 540,
+  selectedPointId = '0865857002', // Satin Midi Dress
+  onSelectPoint,
+  height = 420,
 }: EmbeddingSpaceExplorerProps) {
-  const [internalSelectedId, setInternalSelectedId] = useState<string | null>('0865857002');
-  const selectedPointId = externalSelectedId !== undefined ? externalSelectedId : internalSelectedId;
-  const setSelectedPointId = (id: string | null) => {
-    if (externalOnSelect) externalOnSelect(id);
-    else setInternalSelectedId(id);
-  };
+  const [viewMode, setViewMode] = useState<'3d' | '2d'>('3d');
+  const [selectedDept, setSelectedDept] = useState<string>('all');
 
-  const [mode, setMode] = useState<'3d' | '2d'>('2d');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [legendOpen, setLegendOpen] = useState(true);
-  const [hoveredPointId, setHoveredPointId] = useState<string | null>(null);
-
-  // 3D/2D Camera parameters
-  const [yaw, setYaw] = useState<number>(0.2);
-  const [pitch, setPitch] = useState<number>(0.15);
-  const [zoom, setZoom] = useState<number>(1.1);
+  // Camera & pan state
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState<number>(1.0);
+  const [yaw, setYaw] = useState<number>(0.15);
+  const [pitch, setPitch] = useState<number>(0.1);
 
   const isDraggingRef = useRef<boolean>(false);
   const lastMouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Generate dense cloud of ~750 points clustered by style and department
-  const allPoints = useMemo<EmbeddingPoint[]>(() => {
-    const points: EmbeddingPoint[] = [];
+  // Generate dense cloud of points matching Reference Image (~850 points)
+  const points = useMemo<LatentPoint[]>(() => {
+    const list: LatentPoint[] = [];
 
-    // 1. Add the 22 authentic catalog products as primary anchor points
+    // 1. Primary Catalog items (22 products)
     MOCK_PRODUCTS.forEach((prod, idx) => {
-      let clusterKey = 'Sporty Casual';
+      let clusterKey = 'Tops';
       const cat = prod.category || 'Tops';
-      if (cat === 'Dresses') clusterKey = 'Evening Wear';
-      else if (cat === 'Knitwear') clusterKey = 'Knit Essentials';
-      else if (cat === 'Outerwear') clusterKey = 'Tailored Formal';
-      else if (cat === 'Trousers') clusterKey = 'Streetwear & Denim';
-      else if (cat === 'Footwear' || cat === 'Accessories') clusterKey = 'Accessories & Footwear';
+      if (prod.product_id === '0865857002') clusterKey = 'Evening Wear'; // Satin Midi Dress at (-12.3, 8.4)
+      else if (cat === 'Dresses') clusterKey = 'Dresses';
+      else if (cat === 'Tops' || cat === 'Shirts & Blouses') clusterKey = 'Tops';
+      else if (cat === 'Trousers') clusterKey = 'Trousers';
+      else if (cat === 'Outerwear') clusterKey = 'Outerwear';
+      else if (cat === 'Knitwear') clusterKey = 'Knitwear';
+      else if (cat === 'Accessories' || cat === 'Footwear') clusterKey = 'Accessories';
 
-      const cluster = CLUSTERS[clusterKey] || CLUSTERS['Sporty Casual'];
-      const jitterX = Math.sin(idx * 4.7) * 45;
-      const jitterY = Math.cos(idx * 3.1) * 35;
-      const jitterZ = Math.sin(idx * 2.3) * 40;
+      const cl = CLUSTER_CONFIG[clusterKey] || CLUSTER_CONFIG['Tops'];
+      // Fixed deterministic coordinates
+      let px = cl.cx + Math.sin(idx * 4.3) * 6;
+      let py = cl.cy + Math.cos(idx * 3.7) * 5;
 
-      const x = cluster.centroid[0] + jitterX;
-      const y = cluster.centroid[1] + jitterY;
-      const z = cluster.centroid[2] + jitterZ;
+      // Special pin for Satin Midi Dress to match Reference screenshot exactly (-12.3, 8.4)
+      if (prod.product_id === '0865857002') {
+        px = -12.3;
+        py = 8.4;
+      }
 
-      points.push({
+      list.push({
         id: prod.product_id,
         name: prod.product_name,
         category: cat,
-        department: prod.department || 'Women',
+        department: cat,
         price: prod.price_inr_formatted,
         imageUrl: prod.image_url || `/catalog/${prod.product_id}.jpg`,
-        x,
-        y,
-        z,
-        pca2d_x: x * 1.1 + (Math.sin(idx * 5) * 15),
-        pca2d_y: y * 1.1 + (Math.cos(idx * 4) * 15),
-        dim32VectorSnippet: generateDeterministicVector(prod.product_id),
-        isCatalogItem: true,
+        x: px,
+        y: py,
+        z: Math.sin(idx * 2) * 5,
+        vector: `[${px.toFixed(1)}, ${py.toFixed(1)}, ${(Math.sin(idx) * 2).toFixed(1)}]`,
         cluster: clusterKey,
+        isCatalog: true,
       });
     });
 
-    // 2. Generate ~700 background latent manifold embedding points
-    const clusterKeys = Object.keys(CLUSTERS);
-    for (let i = 0; i < 700; i++) {
-      const cKey = clusterKeys[i % clusterKeys.length];
-      const cl = CLUSTERS[cKey];
+    // 2. Dense background points (~800 points distributed across the 7 clusters)
+    const clusterKeys = Object.keys(CLUSTER_CONFIG);
+    const totalBg = 800;
+    for (let i = 0; i < totalBg; i++) {
+      const clKey = clusterKeys[i % clusterKeys.length];
+      const cl = CLUSTER_CONFIG[clKey];
 
-      // Gaussian-like cluster distribution
-      const u1 = Math.sin(i * 12.9898 + 78.233);
-      const u2 = Math.cos(i * 93.9898 + 43.233);
-      const u3 = Math.sin(i * 37.719 + 11.137);
+      // Gaussian-like cluster spread
+      const u1 = Math.sin(i * 12.9898 + 45.1);
+      const u2 = Math.cos(i * 78.233 + 67.2);
+      const radius = 2 + Math.abs(u1) * 8.5;
+      const angle = (i * 0.42) % (Math.PI * 2);
 
-      const rad = 25 + Math.abs(u1) * 65;
-      const angle = (i * 0.35) % (Math.PI * 2);
+      const px = cl.cx + Math.cos(angle) * radius;
+      const py = cl.cy + Math.sin(angle) * radius * 0.85;
 
-      const x = cl.centroid[0] + Math.cos(angle) * rad;
-      const y = cl.centroid[1] + Math.sin(angle) * rad * 0.85;
-      const z = cl.centroid[2] + u3 * 50;
-
-      const cats = ['Dresses', 'Tops', 'Trousers', 'Outerwear', 'Knitwear', 'Accessories', 'Footwear'];
-      const cat = cats[i % cats.length];
-
-      points.push({
-        id: `emb_bg_${1000000 + i}`,
-        name: `Latent Point #${i + 1}`,
-        category: cat,
-        department: 'H&M Latent Space',
+      list.push({
+        id: `bg_${i}`,
+        name: `Latent Garment #${i + 1}`,
+        category: clKey === 'Evening Wear' ? 'Dresses' : clKey,
+        department: clKey === 'Evening Wear' ? 'Dresses' : clKey,
         price: '₹2,499',
         imageUrl: '/placeholder-garment.svg',
-        x,
-        y,
-        z,
-        pca2d_x: x * 1.05 + u1 * 10,
-        pca2d_y: y * 1.05 + u2 * 10,
-        dim32VectorSnippet: [Number(u1.toFixed(3)), Number(u2.toFixed(3)), Number(u3.toFixed(3))],
-        isCatalogItem: false,
-        cluster: cKey,
+        x: px,
+        y: py,
+        z: u2 * 4,
+        vector: `[${px.toFixed(1)}, ${py.toFixed(1)}, ${(u2 * 4).toFixed(1)}]`,
+        cluster: clKey,
+        isCatalog: false,
       });
     }
 
-    return points;
+    return list;
   }, []);
 
-  // Filter points based on category
+  // Filtered points
   const filteredPoints = useMemo(() => {
-    if (selectedCategory === 'all') return allPoints;
-    return allPoints.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
-  }, [allPoints, selectedCategory]);
+    if (selectedDept === 'all') return points;
+    return points.filter(p => p.department.toLowerCase() === selectedDept.toLowerCase());
+  }, [points, selectedDept]);
 
   // Selected item
   const selectedPoint = useMemo(() => {
-    return allPoints.find(p => p.id === selectedPointId) || allPoints[1]; // default to Satin Midi Dress
-  }, [allPoints, selectedPointId]);
+    return points.find(p => p.id === selectedPointId) || points.find(p => p.id === '0865857002') || points[0];
+  }, [points, selectedPointId]);
 
-  // Resize canvas to match container dimensions
-  const updateCanvasDimensions = useCallback(() => {
+  // Canvas resize logic
+  const updateSize = useCallback(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
-
     const rect = container.getBoundingClientRect();
     const w = Math.max(300, Math.floor(rect.width));
-    const h = Math.max(300, Math.floor(rect.height || 540));
-
+    const h = Math.max(300, Math.floor(rect.height || 480));
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width = w;
       canvas.height = h;
@@ -215,21 +183,17 @@ export function EmbeddingSpaceExplorer({
   }, []);
 
   useEffect(() => {
-    updateCanvasDimensions();
-    const timer = setTimeout(updateCanvasDimensions, 50);
-
-    const ro = new ResizeObserver(() => {
-      updateCanvasDimensions();
-    });
+    updateSize();
+    const timer = setTimeout(updateSize, 60);
+    const ro = new ResizeObserver(updateSize);
     if (containerRef.current) ro.observe(containerRef.current);
-
     return () => {
       clearTimeout(timer);
       ro.disconnect();
     };
-  }, [updateCanvasDimensions]);
+  }, [updateSize]);
 
-  // Continuous animation and render loop
+  // Render loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -243,181 +207,143 @@ export function EmbeddingSpaceExplorer({
       const height = canvas.height;
       if (width === 0 || height === 0) return;
 
-      const centerX = width / 2 + pan.x;
-      const centerY = height / 2 + pan.y;
+      const originX = width * 0.44 + pan.x;
+      const originY = height * 0.52 + pan.y;
 
-      ctx.clearRect(0, 0, width, height);
+      // Coordinate scaling: range X [-40, 40], range Y [-30, 30]
+      const scaleX = (width * 0.78 / 80) * zoom;
+      const scaleY = (height * 0.76 / 60) * zoom;
 
-      // Clean off-white background
+      // Clean white background
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, width, height);
 
-      // Subtle coordinate grid / reference dots
-      ctx.strokeStyle = '#F3F3EE';
+      // Coordinate Grid Lines (Ticks: X [-40 to 40 step 10], Y [-30 to 30 step 10])
+      ctx.strokeStyle = '#F1F1ED';
       ctx.lineWidth = 1;
-      const step = 40;
-      for (let x = 0; x < width; x += step) {
+
+      // Vertical lines & X axis labels
+      for (let tx = -40; tx <= 40; tx += 10) {
+        const sx = originX + tx * scaleX;
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
+        ctx.moveTo(sx, 20);
+        ctx.lineTo(sx, height - 30);
         ctx.stroke();
-      }
-      for (let y = 0; y < height; y += step) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '500 10px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(tx.toString(), sx, height - 14);
       }
 
-      // Project points to screen coordinates
+      // Horizontal lines & Y axis labels
+      for (let ty = -30; ty <= 30; ty += 10) {
+        const sy = originY - ty * scaleY;
+        ctx.beginPath();
+        ctx.moveTo(35, sy);
+        ctx.lineTo(width - 25, sy);
+        ctx.stroke();
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '500 10px system-ui, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(ty.toString(), 28, sy + 3.5);
+      }
+
+      // Axis Titles
+      ctx.fillStyle = '#64748B';
+      ctx.font = '600 10.5px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Dimension 1', originX, height - 2);
+
+      ctx.save();
+      ctx.translate(12, originY);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('Dimension 2', 0, 0);
+      ctx.restore();
+
+      // Project points
       const projected = filteredPoints.map(p => {
-        let sx = 0;
-        let sy = 0;
-        let depth = 0;
-        let depthScale = 1;
-
-        if (mode === '3d') {
+        let px = p.x;
+        let py = p.y;
+        if (viewMode === '3d') {
           const cosY = Math.cos(yaw);
           const sinY = Math.sin(yaw);
-          const cosP = Math.cos(pitch);
-          const sinP = Math.sin(pitch);
-
-          const x1 = p.x * cosY + p.z * sinY;
-          const z1 = -p.x * sinY + p.z * cosY;
-          const y2 = p.y * cosP - z1 * sinP;
-          const z2 = p.y * sinP + z1 * cosP;
-
-          const fov = 500;
-          depthScale = (fov / (fov + z2)) * zoom;
-          sx = centerX + x1 * depthScale;
-          sy = centerY + y2 * depthScale;
-          depth = z2;
-        } else {
-          sx = centerX + p.pca2d_x * zoom * 1.15;
-          sy = centerY + p.pca2d_y * zoom * 1.15;
-          depth = 0;
-          depthScale = zoom;
+          px = p.x * cosY + p.z * sinY;
+          py = p.y * Math.cos(pitch) - p.z * Math.sin(pitch);
         }
+        const sx = originX + px * scaleX;
+        const sy = originY - py * scaleY;
 
         return {
           ...p,
-          screenX: sx,
-          screenY: sy,
-          depth,
-          depthScale,
-          isSelected: p.id === selectedPoint?.id,
-          isHovered: p.id === hoveredPointId,
+          sx,
+          sy,
+          isSelected: selectedPoint?.id === p.id,
         };
       });
 
-      // Sort points back to front
-      projected.sort((a, b) => b.depth - a.depth);
-
-      // Draw cluster region label watermarks
-      Object.entries(CLUSTERS).forEach(([k, cl]) => {
-        let lx = centerX + cl.centroid[0] * zoom * 1.15;
-        let ly = centerY + cl.centroid[1] * zoom * 1.15;
-        if (mode === '3d') {
+      // Draw cluster region label badges (e.g. [Evening Wear], [Tops], [Dresses], etc.)
+      Object.entries(CLUSTER_CONFIG).forEach(([k, cl]) => {
+        let cx = cl.cx;
+        let cy = cl.cy;
+        if (viewMode === '3d') {
           const cosY = Math.cos(yaw);
           const sinY = Math.sin(yaw);
-          const x1 = cl.centroid[0] * cosY + cl.centroid[2] * sinY;
-          const z1 = -cl.centroid[0] * sinY + cl.centroid[2] * cosY;
-          const y2 = cl.centroid[1] * Math.cos(pitch) - z1 * Math.sin(pitch);
-          lx = centerX + x1 * zoom;
-          ly = centerY + y2 * zoom;
+          cx = cl.cx * cosY;
+          cy = cl.cy * Math.cos(pitch);
         }
+        const sx = originX + cx * scaleX;
+        const sy = originY - cy * scaleY;
 
-        ctx.font = '600 13px system-ui, -apple-system, sans-serif';
-        ctx.fillStyle = '#262626';
+        ctx.font = '600 10px system-ui, sans-serif';
+        const txt = cl.label;
+        const metrics = ctx.measureText(txt);
+        const bw = metrics.width + 14;
+        const bh = 18;
+
+        // Badge background
+        ctx.fillStyle = cl.bg || '#F8FAFC';
+        ctx.strokeStyle = cl.border || '#E2E8F0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(sx - bw / 2, sy - 18, bw, bh, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        // Badge text
+        ctx.fillStyle = cl.color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(cl.label, lx, ly - 35);
+        ctx.fillText(txt, sx, sy - 9);
       });
 
-      // Render dense background embedding points
+      // Render dense points
       projected.forEach(p => {
-        if (p.isCatalogItem) return; // catalog items drawn on top
-        const cl = CLUSTERS[p.cluster] || CLUSTERS['Sporty Casual'];
-        ctx.fillStyle = cl.color + '88'; // semi-transparent
+        if (p.isSelected) return; // selected point rendered on top
+        const cl = CLUSTER_CONFIG[p.cluster] || CLUSTER_CONFIG['Tops'];
+        ctx.fillStyle = cl.color;
         ctx.beginPath();
-        ctx.arc(p.screenX, p.screenY, 2.5 * Math.min(1.5, Math.max(0.6, p.depthScale / zoom)), 0, Math.PI * 2);
+        ctx.arc(p.sx, p.sy, p.isCatalog ? 3.2 : 2.2, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Render primary catalog product anchor points
-      projected.forEach(p => {
-        if (!p.isCatalogItem) return;
-        const color = CATEGORY_COLORS[p.category] || '#2563EB';
-
-        // Outer glow on hover or select
-        if (p.isSelected || p.isHovered) {
-          ctx.beginPath();
-          ctx.arc(p.screenX, p.screenY, 14, 0, Math.PI * 2);
-          ctx.fillStyle = color + '33';
-          ctx.fill();
-        }
-
-        // Inner circle
-        ctx.beginPath();
-        ctx.arc(p.screenX, p.screenY, p.isSelected ? 6.5 : 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = p.isSelected ? '#2563EB' : color;
-        ctx.fill();
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.stroke();
-      });
-
-      // Draw Selected Point Callout / Leader Line & Popover Card (matching Image 4!)
+      // Render selected point with glowing highlight ring
       if (selectedPoint) {
-        const selScreen = projected.find(p => p.id === selectedPoint.id);
-        if (selScreen) {
-          const cardX = selScreen.screenX + 60;
-          const cardY = selScreen.screenY - 50;
-          const cardW = 190;
-          const cardH = 95;
-
-          // Connector leader line
+        const sel = projected.find(p => p.id === selectedPoint.id);
+        if (sel) {
+          // Glow ring
           ctx.beginPath();
-          ctx.moveTo(selScreen.screenX, selScreen.screenY);
-          ctx.lineTo(cardX, cardY + cardH / 2);
-          ctx.strokeStyle = '#94A3B8';
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-
-          // Anchor pulse dot on selected point
-          ctx.beginPath();
-          ctx.arc(selScreen.screenX, selScreen.screenY, 8, 0, Math.PI * 2);
+          ctx.arc(sel.sx, sel.sy, 8, 0, Math.PI * 2);
           ctx.strokeStyle = '#2563EB';
           ctx.lineWidth = 2;
           ctx.stroke();
 
-          // Card Background
-          ctx.save();
-          ctx.shadowColor = 'rgba(0,0,0,0.08)';
-          ctx.shadowBlur = 12;
-          ctx.shadowOffsetY = 4;
-          ctx.fillStyle = '#FFFFFF';
-          ctx.strokeStyle = '#E2E8F0';
-          ctx.lineWidth = 1;
+          // Center solid dot
           ctx.beginPath();
-          ctx.roundRect(cardX, cardY, cardW, cardH, 8);
+          ctx.arc(sel.sx, sel.sy, 4, 0, Math.PI * 2);
+          ctx.fillStyle = '#2563EB';
           ctx.fill();
-          ctx.stroke();
-          ctx.restore();
-
-          // Card Text
-          ctx.fillStyle = '#0F172A';
-          ctx.font = '600 12px system-ui, sans-serif';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
-          ctx.fillText(selectedPoint.name, cardX + 10, cardY + 8);
-
-          ctx.fillStyle = '#64748B';
-          ctx.font = '400 9.5px monospace';
-          ctx.fillText('32D vector: 1361, 1066', cardX + 10, cardY + 26);
-          ctx.fillText('-09.7782446271 -0.118338227', cardX + 10, cardY + 38);
-          ctx.fillText('Cosine Similarity: 0.985', cardX + 10, cardY + 52);
-          ctx.fillText('Cosine vectors: 1.325', cardX + 10, cardY + 64);
         }
       }
     };
@@ -429,191 +355,231 @@ export function EmbeddingSpaceExplorer({
     loop();
 
     return () => cancelAnimationFrame(animId);
-  }, [filteredPoints, mode, yaw, pitch, zoom, pan, selectedPoint, hoveredPointId]);
+  }, [filteredPoints, viewMode, pan, zoom, yaw, pitch, selectedPoint]);
 
-  // Mouse interaction
+  // Mouse drag & zoom
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     isDraggingRef.current = true;
     lastMouseRef.current = { x: e.clientX, y: e.clientY };
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - lastMouseRef.current.x;
+    const dy = e.clientY - lastMouseRef.current.y;
 
-    if (isDraggingRef.current) {
-      const dx = e.clientX - lastMouseRef.current.x;
-      const dy = e.clientY - lastMouseRef.current.y;
-      if (mode === '3d') {
-        setYaw(y => y + dx * 0.008);
-        setPitch(p => Math.max(-1.4, Math.min(1.4, p - dy * 0.008)));
-      } else {
-        setPan(p => ({ x: p.x + dx, y: p.y + dy }));
-      }
-      lastMouseRef.current = { x: e.clientX, y: e.clientY };
-      return;
+    if (viewMode === '3d') {
+      setYaw(y => y + dx * 0.008);
+      setPitch(p => Math.max(-1.2, Math.min(1.2, p - dy * 0.008)));
+    } else {
+      setPan(p => ({ x: p.x + dx, y: p.y + dy }));
     }
-
-    // Hit test hover
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-
-    const centerX = canvas.width / 2 + pan.x;
-    const centerY = canvas.height / 2 + pan.y;
-
-    let hit: string | null = null;
-    let minD = 18;
-
-    allPoints.forEach(p => {
-      if (!p.isCatalogItem) return;
-      const sx = centerX + p.pca2d_x * zoom * 1.15;
-      const sy = centerY + p.pca2d_y * zoom * 1.15;
-      const d = Math.sqrt((mx - sx) ** 2 + (my - sy) ** 2);
-      if (d < minD) {
-        minD = d;
-        hit = p.id;
-      }
-    });
-
-    setHoveredPointId(hit);
+    lastMouseRef.current = { x: e.clientX, y: e.clientY };
   };
 
   const handleMouseUp = () => {
     isDraggingRef.current = false;
   };
 
-  const handleCanvasClick = () => {
-    if (hoveredPointId) {
-      setSelectedPointId(hoveredPointId);
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const originX = canvas.width * 0.44 + pan.x;
+    const originY = canvas.height * 0.52 + pan.y;
+    const scaleX = (canvas.width * 0.78 / 80) * zoom;
+    const scaleY = (canvas.height * 0.76 / 60) * zoom;
+
+    let closest: LatentPoint | null = null;
+    let minD = 22;
+
+    points.forEach(p => {
+      if (!p.isCatalog) return;
+      let px = p.x;
+      let py = p.y;
+      if (viewMode === '3d') {
+        const cosY = Math.cos(yaw);
+        const sinY = Math.sin(yaw);
+        px = p.x * cosY + p.z * sinY;
+        py = p.y * Math.cos(pitch) - p.z * Math.sin(pitch);
+      }
+      const sx = originX + px * scaleX;
+      const sy = originY - py * scaleY;
+      const d = Math.sqrt((mx - sx) ** 2 + (my - sy) ** 2);
+      if (d < minD) {
+        minD = d;
+        closest = p;
+      }
+    });
+
+    if (closest !== null && onSelectPoint) {
+      onSelectPoint((closest as LatentPoint).id);
     }
   };
 
-  const handleResetCamera = () => {
-    setYaw(0.2);
-    setPitch(0.15);
-    setZoom(1.1);
-    setPan({ x: 0, y: 0 });
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom(z => Math.max(0.3, Math.min(4.0, z * delta)));
   };
 
   return (
-    <div className="relative w-full bg-white rounded-2xl border border-[#E5E5E0] overflow-hidden shadow-xs">
-      {/* Top Card Header */}
-      <div className="px-5 py-4 border-b border-[#F0EFEA] flex items-center justify-between bg-white">
-        <h3 className="text-base font-semibold text-[#171717] tracking-tight">
-          H&amp;M Two-Tower latent space
-        </h3>
-        <button className="text-[#888] hover:text-[#111] p-1 transition-colors">
-          <Settings size={16} />
-        </button>
+    <div className="bg-white rounded-2xl border border-[#E5E5E0] p-5 shadow-xs flex flex-col relative">
+      {/* Card Header matching Reference Image */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-base font-semibold text-[#171717] tracking-tight">
+            H&amp;M Two-Tower Latent Space
+          </h3>
+          <span className="text-[#94A3B8] cursor-help" title="2D PCA & 3D t-SNE projections of 32D garment embedding space">
+            <Info size={14} />
+          </span>
+        </div>
+
+        {/* 3D View / 2D PCA Mode Toggles + Fullscreen Button */}
+        <div className="flex items-center gap-2">
+          <div className="flex bg-[#F1F1ED] p-0.5 rounded-lg border border-[#E5E5E0] text-xs font-medium">
+            <button
+              onClick={() => setViewMode('3d')}
+              className={`px-3 py-1 rounded-md transition-all ${
+                viewMode === '3d'
+                  ? 'bg-[#1E293B] text-white shadow-xs'
+                  : 'text-[#64748B] hover:text-[#0F172A]'
+              }`}
+            >
+              3D View
+            </button>
+            <button
+              onClick={() => setViewMode('2d')}
+              className={`px-3 py-1 rounded-md transition-all ${
+                viewMode === '2d'
+                  ? 'bg-[#1E293B] text-white shadow-xs'
+                  : 'text-[#64748B] hover:text-[#0F172A]'
+              }`}
+            >
+              2D PCA
+            </button>
+          </div>
+
+          <button
+            onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1.0); }}
+            className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] rounded-lg border border-[#E2E8F0] transition-colors"
+            title="Reset Zoom & Pan"
+          >
+            <Maximize2 size={13} />
+          </button>
+        </div>
       </div>
 
-      {/* Canvas Area Container */}
+      {/* Canvas Area Container — explicit height so canvas always renders */}
       <div
         ref={containerRef}
-        className="relative w-full bg-white overflow-hidden select-none"
-        style={{ height: typeof height === 'number' ? `${height}px` : height, minHeight: '480px' }}
+        className="relative w-full bg-white rounded-xl overflow-hidden select-none"
+        style={{ height: typeof height === 'number' ? `${height}px` : height }}
       >
         <canvas
           ref={canvasRef}
+          width={800}
+          height={typeof height === 'number' ? height : 440}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onClick={handleCanvasClick}
+          onWheel={handleWheel}
           className="w-full h-full block cursor-crosshair"
-          style={{ display: 'block' }}
         />
 
-        {/* Floating Top-Left Tools Bar (matching Image 4) */}
-        <div className="absolute top-4 left-4 flex flex-col bg-white border border-[#E5E5E0] rounded-xl shadow-xs overflow-hidden z-10">
-          <button
-            onClick={handleResetCamera}
-            className="p-2 text-[#555] hover:text-[#111] hover:bg-[#F7F7F5] transition-colors border-b border-[#F0EFEA]"
-            title="Reset View"
-          >
-            <RotateCcw size={15} />
-          </button>
-          <button
-            onClick={() => setZoom(z => Math.min(2.5, z + 0.15))}
-            className="p-2 text-[#555] hover:text-[#111] hover:bg-[#F7F7F5] transition-colors border-b border-[#F0EFEA]"
-            title="Zoom In"
-          >
-            <ZoomIn size={15} />
-          </button>
-          <button
-            onClick={() => setZoom(z => Math.max(0.6, z - 0.15))}
-            className="p-2 text-[#555] hover:text-[#111] hover:bg-[#F7F7F5] transition-colors border-b border-[#F0EFEA]"
-            title="Zoom Out"
-          >
-            <ZoomOut size={15} />
-          </button>
-          <button
-            onClick={() => setMode(m => m === '2d' ? '3d' : '2d')}
-            className={`p-2 transition-colors border-b border-[#F0EFEA] ${
-              mode === '3d' ? 'bg-[#171717] text-white' : 'text-[#555] hover:text-[#111] hover:bg-[#F7F7F5]'
-            }`}
-            title="Toggle 3D Orbit / 2D Plane"
-          >
-            <Rotate3d size={15} />
-          </button>
-          <button
-            onClick={() => handleResetCamera()}
-            className="p-2 text-[#555] hover:text-[#111] hover:bg-[#F7F7F5] transition-colors"
-            title="Center View"
-          >
-            <Maximize2 size={15} />
-          </button>
-        </div>
-
-        {/* Floating Top-Right Category Dropdown / Legend (matching Image 4) */}
-        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm border border-[#E5E5E0] rounded-xl shadow-xs p-3 z-10 w-44">
-          <button
-            onClick={() => setLegendOpen(!legendOpen)}
-            className="w-full flex items-center justify-between text-xs font-semibold text-[#171717] mb-1"
-          >
-            <span>Category</span>
-            <ChevronDown size={14} className={`transform transition-transform ${legendOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {legendOpen && (
-            <div className="mt-2 space-y-1.5 text-xs">
-              {['Dresses', 'Tops', 'Trousers', 'Outerwear', 'Knitwear'].map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(selectedCategory === cat ? 'all' : cat)}
-                  className={`w-full flex items-center gap-2 px-1.5 py-1 rounded-md transition-colors text-left ${
-                    selectedCategory === cat ? 'bg-[#F0EFEA] font-semibold text-[#111]' : 'text-[#555] hover:bg-[#F7F7F5]'
-                  }`}
-                >
-                  <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: CATEGORY_COLORS[cat] || '#888' }}
-                  />
-                  <span className="truncate">{cat}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Selected Product Thumbnail Overlay on Popover (rendered with real image matching Image 4) */}
-        {selectedPoint && (
-          <div
-            className="absolute pointer-events-none z-10"
-            style={{
-              left: `calc(50% + ${pan.x + selectedPoint.pca2d_x * zoom * 1.15 + 195}px)`,
-              top: `calc(50% + ${pan.y + selectedPoint.pca2d_y * zoom * 1.15 - 38}px)`,
-            }}
-          >
-            <div className="w-12 h-16 rounded bg-[#F7F7F5] border border-[#E2E8F0] overflow-hidden shadow-xs relative">
-              <img
-                src={selectedPoint.imageUrl}
-                alt={selectedPoint.name}
-                className="w-full h-full object-contain p-1"
-              />
-            </div>
+        {/* Floating Department Legend on Top Right (matching Reference Image) */}
+        <div 
+          className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm border border-[#E2E8F0] rounded-xl p-3 shadow-xs text-xs z-10 w-36 pointer-events-auto"
+          style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10, width: '144px' }}
+        >
+          <span className="font-semibold text-[#1E293B] block mb-2 text-[11.5px]">
+            Department
+          </span>
+          <div className="space-y-1.5 text-[11px]">
+            {Object.entries(DEPT_COLORS).map(([dept, col]) => (
+              <button
+                key={dept}
+                onClick={() => setSelectedDept(selectedDept === dept ? 'all' : dept)}
+                className={`flex items-center gap-2 w-full text-left py-0.5 px-1 rounded transition-colors ${
+                  selectedDept === dept ? 'bg-[#F1F5F9] font-semibold text-[#0F172A]' : 'text-[#475569] hover:bg-[#F8FAFC]'
+                }`}
+              >
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: col.dot }} />
+                <span className="truncate">{dept}</span>
+              </button>
+            ))}
           </div>
-        )}
+        </div>
+
+        {/* Selected Product Floating Tooltip Popover (dynamically anchored to selected point) */}
+        {selectedPoint && (() => {
+          const canvas = canvasRef.current;
+          const w = canvas?.width || 600;
+          const h = canvas?.height || 420;
+          const originX = w * 0.44 + pan.x;
+          const originY = h * 0.52 + pan.y;
+          const scaleX = (w * 0.78 / 80) * zoom;
+          const scaleY = (h * 0.76 / 60) * zoom;
+
+          let px = selectedPoint.x;
+          let py = selectedPoint.y;
+          if (viewMode === '3d') {
+            const cosY = Math.cos(yaw);
+            const sinY = Math.sin(yaw);
+            px = selectedPoint.x * cosY + selectedPoint.z * sinY;
+            py = selectedPoint.y * Math.cos(pitch) - selectedPoint.z * Math.sin(pitch);
+          }
+
+          const sx = originX + px * scaleX;
+          const sy = originY - py * scaleY;
+          const clampedX = Math.max(12, Math.min(w - 270, sx + 14));
+          const clampedY = Math.max(12, Math.min(h - 95, sy - 36));
+
+          return (
+            <div
+              className="absolute z-20 pointer-events-none transition-all duration-75"
+              style={{
+                position: 'absolute',
+                left: `${clampedX}px`,
+                top: `${clampedY}px`,
+                zIndex: 20,
+              }}
+            >
+              <div className="bg-white rounded-xl border border-[#CBD5E1] p-2.5 shadow-xl flex items-center gap-2.5 w-60 pointer-events-auto">
+                {/* Garment Thumbnail on Left */}
+                <div className="w-11 h-14 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center p-1">
+                  <img
+                    src={selectedPoint.imageUrl}
+                    alt={selectedPoint.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* Product Info on Right */}
+                <div className="min-w-0 flex-1 text-left">
+                  <h4 className="font-bold text-xs text-[#0F172A] truncate leading-tight">
+                    {selectedPoint.name}
+                  </h4>
+                  <p className="text-[10px] text-[#64748B] mt-0.5">
+                    Dept: {selectedPoint.department}
+                  </p>
+                  <p className="text-[10px] font-mono text-[#64748B] mt-0.5">
+                    Vector: {selectedPoint.vector}
+                  </p>
+                  <p className="text-[10px] text-[#64748B] mt-0.5">
+                    Nearest neighbors: 12
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

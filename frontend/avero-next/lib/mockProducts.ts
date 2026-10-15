@@ -209,7 +209,7 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     product_id: '0110065001',
     article_id: '0110065001',
-    product_name: 'Classic Crewneck Tee',
+    product_name: 'Classic Crewneck Jersey Top',
     category: 'Tops',
     department: 'Men',
     subcategory: 'Tops & Shirts',
@@ -268,7 +268,7 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     product_id: '0761234001',
     article_id: '0761234001',
-    product_name: 'Kids Cotton Romper',
+    product_name: 'Kids Organic Cotton Romper',
     category: 'Tops',
     department: 'Kids',
     subcategory: 'Tops & Shirts',
@@ -287,7 +287,7 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     product_id: '0761234002',
     article_id: '0761234002',
-    product_name: 'Kids Striped Polo Tee',
+    product_name: 'Kids Striped Cotton Tee',
     category: 'Tops',
     department: 'Kids',
     subcategory: 'Tops & Shirts',
@@ -347,7 +347,7 @@ export const MOCK_PRODUCTS: Product[] = [
   {
     product_id: '0834478003',
     article_id: '0834478003',
-    product_name: 'Minimalist Chelsea Boots',
+    product_name: 'Minimalist Leather Chelsea Boots',
     category: 'Footwear',
     department: 'Shoes',
     subcategory: 'Footwear',
